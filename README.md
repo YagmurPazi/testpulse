@@ -7,8 +7,9 @@
 
 TestPulse detects **flaky tests** from CI test reports and tracks test health over time.
 
-> **Status: Phase 3 (dashboard).** Reports are ingested, flaky tests are detected and tracked through their
-> lifecycle, and a dashboard shows why each test is flaky. Notifications follow; see the [roadmap](#roadmap).
+> **Status: Phase 4 (notifications and GitHub importer).** Reports are uploaded or imported from GitHub Actions,
+> flaky tests are detected and tracked through their lifecycle, the team is notified by e-mail or Slack, and a
+> dashboard shows why each test is flaky. Next: documentation and quality thresholds; see the [roadmap](#roadmap).
 
 ## The problem
 
@@ -17,12 +18,12 @@ and a bit of trust in the pipeline, until people start ignoring red builds altog
 
 TestPulse:
 
-- collects JUnit XML (Surefire format) reports from uploads (GitHub Actions artifacts: Phase 4),
+- collects JUnit XML (Surefire format) reports from uploads and from GitHub Actions artifacts,
 - detects flaky tests from evidence, e.g. a test that both passed and failed on the same commit,
   or one that keeps flipping between pass and fail ([ADR-0007](docs/adr/0007-flakiness-detection-and-test-status.md)),
 - moves each test through a lifecycle: `Stable → Suspicious → Flaky → Quarantined`, with a reason for every change,
 - shows each repository's tests, failure trend and the reason behind every status change on a dashboard,
-- will notify the team (Slack, e-mail) when a test changes state.
+- notifies the team (e-mail, Slack) when a test becomes flaky, is quarantined, released or recovers.
 
 The value is shown with real data: TestPulse analyses **its own CI runs** and those of open source Java projects.
 
@@ -78,7 +79,7 @@ same commit).
 | ingestion-service | http://localhost:8081/actuator/health |
 | analysis-service | http://localhost:8082/actuator/health |
 | notification-service | http://localhost:8083/actuator/health |
-| Mailpit (captured e-mails) | http://localhost:8025 |
+| Mailpit (notification e-mails) | http://localhost:8025 |
 | Kafka UI (optional) | http://localhost:8090, start with `docker compose --profile tools up` |
 
 With the Kafka UI running, the published `TestRunIngested` events are visible under
@@ -132,6 +133,34 @@ curl -s http://localhost:8082/api/v1/repositories/acme/checkout/tests?status=FLA
 
 Every status change is also published as a `TestStatusChanged` event on `testpulse.test-status-changes`.
 
+## Notifications
+
+notification-service consumes the status changes and tells the team about the ones that need attention or record a
+decision: a test became flaky, was quarantined, released, or recovered ([ADR-0011](docs/adr/0011-notification-delivery.md)).
+Changes into and out of *suspicious* and changes older than 24 hours are not notified.
+
+| Channel | Enabled by | Locally |
+|---|---|---|
+| E-mail | `testpulse.notification.email.enabled` (on), recipients in `testpulse.notification.email.to` | captured by Mailpit, http://localhost:8025 |
+| Slack | `SLACK_WEBHOOK_URL`, an [incoming webhook](https://api.slack.com/messaging/webhooks) | `SLACK_WEBHOOK_URL=https://hooks.slack.com/... docker compose up` |
+
+Each channel's delivery is recorded per event, so a redelivered event sends nothing twice and a failing channel
+neither blocks nor repeats the others.
+
+## Importing from GitHub Actions
+
+With a GitHub token, ingestion-service imports the JUnit reports of recent workflow runs every 5 minutes, without
+any change to the workflows ([ADR-0012](docs/adr/0012-github-actions-importer.md)). It reads the artifacts whose names
+start with `junit-reports`, as this repository's CI uploads them:
+
+```bash
+GITHUB_TOKEN=$(gh auth token) docker compose up            # analyses this repository's own CI
+GITHUB_TOKEN=... GITHUB_REPOSITORIES=owner/a,owner/b docker compose up
+```
+
+Without a token the importer is off and TestPulse never calls GitHub. Uploads and imports of the same run are
+ingested once.
+
 ## Dashboard
 
 http://localhost:3000 shows the same results, without curl:
@@ -148,6 +177,9 @@ nginx serves the static bundle and proxies `/api/` to analysis-service, so the b
 ## Development
 
 Requires JDK 21 and Docker (integration tests start real containers).
+
+After pulling a version that adds a service database, recreate the local PostgreSQL volume once, since the database
+init script only runs on an empty volume: `docker compose down -v`.
 
 ```bash
 ./mvnw verify          # full quality pipeline, same as CI
@@ -182,7 +214,7 @@ event-contracts/       Kafka event schemas shared by the services
 services/
   ingestion-service/   receives reports, publishes TestRunIngested
   analysis-service/    flakiness detection, test state machine, query API
-  notification-service/ Slack and e-mail notifications
+  notification-service/ e-mail and Slack notifications
   Dockerfile           one multi-stage image definition for all services
 dashboard/             React single page app, nginx image, Playwright end-to-end tests
 infra/                 local infrastructure (PostgreSQL init scripts)
@@ -212,7 +244,7 @@ Every pull request runs the full pipeline in [GitHub Actions](.github/workflows/
 | Code style | Checkstyle ([rules](config/checkstyle/checkstyle.xml)) | any violation |
 | Architecture | ArchUnit ([shared rules](architecture-rules/src/main/java/io/github/yagmurpazi/testpulse/architecture/HexagonalArchitecture.java)) | the domain depends on a framework, a dependency points outwards, or two adapters depend on each other |
 | Unit tests | JUnit 5, Mockito, AssertJ | any failure |
-| Integration tests | Testcontainers (PostgreSQL 18) | any failure |
+| Integration tests | Testcontainers (PostgreSQL 18, Kafka 4.4, Mailpit) | any failure |
 | Static analysis | SpotBugs | a medium or high priority finding |
 | Coverage | JaCoCo | report only for now; thresholds in Phase 5 |
 | Mutation testing | PIT | on demand for now; thresholds in Phase 5 |
@@ -229,7 +261,7 @@ The dashboard's testing strategy is described in [ADR-0010](docs/adr/0010-fronte
 
 **Dogfooding:** CI uploads its JUnit XML reports (`junit-reports`, `junit-reports-dashboard`, `junit-reports-e2e`)
 also for failed runs.
-TestPulse's GitHub importer will analyse them.
+With a token, TestPulse's GitHub importer analyses them.
 
 ## Architecture decisions
 
@@ -247,6 +279,8 @@ Decisions and their trade-offs are recorded in [`docs/adr`](docs/adr/README.md).
 | [0008](docs/adr/0008-idempotent-consumer-and-error-handling.md) | Idempotent event consumption and error handling |
 | [0009](docs/adr/0009-dashboard-architecture.md) | Dashboard architecture: single page app behind a same-origin proxy |
 | [0010](docs/adr/0010-frontend-testing-strategy.md) | Frontend testing strategy |
+| [0011](docs/adr/0011-notification-delivery.md) | Notification delivery: what is notified, idempotency per channel, bounded retries |
+| [0012](docs/adr/0012-github-actions-importer.md) | Importing CI runs from GitHub Actions by polling |
 
 ## Known limitations
 
@@ -259,7 +293,9 @@ Decisions and their trade-offs are recorded in [`docs/adr`](docs/adr/README.md).
 - **At-least-once delivery:** an event can reach Kafka twice after a failure; consumers deduplicate on its `eventId`
   ([ADR-0006](docs/adr/0006-transactional-outbox.md)).
 - Records that can never be processed are skipped and only logged; a dead letter topic is planned after the MVP
-  ([ADR-0008](docs/adr/0008-idempotent-consumer-and-error-handling.md)).
+  ([ADR-0008](docs/adr/0008-idempotent-consumer-and-error-handling.md)). Notifications that cannot be delivered for
+  about a minute are given up the same way ([ADR-0011](docs/adr/0011-notification-delivery.md)).
+- Notifications go to one list of recipients; there is no routing per repository or team yet.
 - A renamed test starts a new history, and manual quarantines live in the database, not in the event stream.
 - The dashboard refreshes on navigation and focus, not live, and its API types are written by hand
   ([ADR-0009](docs/adr/0009-dashboard-architecture.md)).
@@ -270,7 +306,7 @@ Decisions and their trade-offs are recorded in [`docs/adr`](docs/adr/README.md).
 - [x] **Phase 1:** ingestion-service: JUnit XML parsing, upload endpoint, `TestRunIngested` events via outbox
 - [x] **Phase 2:** analysis-service: test history, flakiness strategies, test state machine, query API
 - [x] **Phase 3:** dashboard: repositories, trends, test history, quarantine; accessibility and end-to-end tests
-- [ ] **Phase 4:** notification-service, GitHub Actions importer
+- [x] **Phase 4:** notification-service (e-mail, Slack), GitHub Actions importer
 - [ ] **Phase 5:** C4 diagrams, coverage and mutation thresholds, demo data and video
 
 ## License
