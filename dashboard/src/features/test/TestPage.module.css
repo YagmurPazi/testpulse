@@ -1,0 +1,130 @@
+.header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-3);
+  margin-bottom: var(--space-4);
+}
+
+.className {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin: var(--space-1) 0 0;
+}
+
+.status {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin: var(--space-2) 0 0;
+}
+
+.actions {
+  display: grid;
+  gap: var(--space-3);
+  max-width: 640px;
+}
+
+.actions > button {
+  justify-self: start;
+}
+
+.confirm {
+  padding: var(--space-4);
+}
+
+.confirm p {
+  margin: 0 0 var(--space-3);
+}
+
+.confirmButtons {
+  display: flex;
+  gap: var(--space-2);
+}
+
+.strip {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 3px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.result {
+  width: 18px;
+  height: 18px;
+  border-radius: 3px;
+}
+
+.passed {
+  background: var(--passed);
+}
+
+.failed,
+.error {
+  background: var(--failed);
+}
+
+.skipped {
+  background: var(--skipped);
+}
+
+/* Passed only after failed attempts: half red, half green. */
+.rerun {
+  background: linear-gradient(135deg, var(--failed) 50%, var(--passed) 50%);
+}
+
+.history {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  border-left: 2px solid var(--border);
+}
+
+.historyItem {
+  position: relative;
+  padding: 0 0 var(--space-4) var(--space-4);
+}
+
+.historyItem::before {
+  content: '';
+  position: absolute;
+  left: -6px;
+  top: 6px;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--text-muted);
+}
+
+.historyTransition {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.historyReason {
+  margin: var(--space-1) 0;
+}
+
+.outcomePASSED {
+  color: var(--stable);
+}
+
+.outcomeFAILED,
+.outcomeERROR {
+  color: var(--failed);
+  font-weight: 600;
+}
+
+.outcomeSKIPPED {
+  color: var(--text-muted);
+}
+
+.outcomeRerun {
+  color: var(--suspicious);
+  font-weight: 600;
+}
