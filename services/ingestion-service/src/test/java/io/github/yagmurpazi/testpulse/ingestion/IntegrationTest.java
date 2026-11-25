@@ -14,7 +14,8 @@ import org.springframework.jdbc.core.simple.JdbcClient;
  */
 @SpringBootTest(
         webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
-        properties = "testpulse.outbox.relay.enabled=false")
+        // No relay, so tests decide when events are published; no importer, so tests never call GitHub.
+        properties = {"testpulse.outbox.relay.enabled=false", "testpulse.importer.github.token="})
 @Import(TestcontainersConfiguration.class)
 public abstract class IntegrationTest {
 

@@ -36,6 +36,18 @@ testpulse:
       partitions: 3
       # 1 for the single local broker; at least 3 in production.
       replication-factor: 1
+  # Imports the JUnit reports of recent GitHub Actions runs; reasoning in ADR-0012.
+  importer:
+    github:
+      # A token enables the importer. Any token can read public repositories; never commit one.
+      token: ${GITHUB_TOKEN:}
+      api-url: https://api.github.com
+      repositories: YagmurPazi/testpulse
+      artifact-prefix: junit-reports
+      runs-per-import: 20
+      max-artifact-size: 50MB
+      initial-delay: 30s
+      poll-interval: 5m
   outbox:
     relay:
       enabled: true

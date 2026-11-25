@@ -117,6 +117,10 @@ services:
       SPRING_DATASOURCE_USERNAME: ingestion
       SPRING_DATASOURCE_PASSWORD: ingestion
       SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:19092
+      # Optional: a GitHub token from the shell enables the GitHub Actions importer, e.g.
+      # GITHUB_TOKEN=$(gh auth token) docker compose up
+      GITHUB_TOKEN: ${GITHUB_TOKEN:-}
+      TESTPULSE_IMPORTER_GITHUB_REPOSITORIES: ${GITHUB_REPOSITORIES:-YagmurPazi/testpulse}
     depends_on:
       kafka:
         condition: service_healthy
