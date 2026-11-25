@@ -89,3 +89,14 @@ describe('repository page', () => {
     expect(await screen.findByRole('heading', { name: 'Repository not found' })).toBeInTheDocument();
   });
 });
+
+describe('trend chart', () => {
+  it('is hidden from assistive technology and not focusable, as its data is in the caption and table', async () => {
+    renderApp('/repositories/acme/checkout');
+
+    const figure = await screen.findByRole('figure');
+    const chart = figure.querySelector('.recharts-wrapper > svg');
+    expect(chart).toHaveAttribute('aria-hidden', 'true');
+    expect(chart).not.toHaveAttribute('tabindex');
+  });
+});

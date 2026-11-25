@@ -13,7 +13,8 @@ export function StatusHistory({ changes }: { changes: StatusChange[] }) {
         <li key={`${change.changedAt}-${change.to}`} className={styles.historyItem}>
           <div className={styles.historyTransition}>
             <StatusBadge status={change.from} />
-            <span aria-label="to">→</span>
+            <span aria-hidden="true">→</span>
+            <span className="visually-hidden">to</span>
             <StatusBadge status={change.to} />
             <span className="muted">{change.triggeringRunId ? 'automatic' : 'manual'}</span>
           </div>

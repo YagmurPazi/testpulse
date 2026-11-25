@@ -17,7 +17,15 @@ export function TrendChart({ trend, days }: { trend: DailyTrend[]; days: number 
         <strong>{sum.failures} failed</strong>, <strong>{sum.passedOnRerun} passed only after a rerun</strong>
         .
       </figcaption>
-      <BarChart responsive data={trend} style={{ width: '100%', height: 240 }} aria-hidden="true">
+      {/* Hidden from assistive technology, without Recharts' keyboard layer that would make it focusable:
+          the caption and the table carry the same data. */}
+      <BarChart
+        responsive
+        accessibilityLayer={false}
+        data={trend}
+        style={{ width: '100%', height: 240 }}
+        aria-hidden="true"
+      >
         <CartesianGrid vertical={false} stroke="var(--border)" />
         <XAxis dataKey="day" tickFormatter={formatDay} stroke="var(--text-muted)" minTickGap={16} />
         <YAxis allowDecimals={false} stroke="var(--text-muted)" width={32} />

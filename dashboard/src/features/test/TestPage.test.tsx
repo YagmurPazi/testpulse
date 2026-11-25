@@ -63,7 +63,7 @@ describe('test page', () => {
 
     const history = await screen.findByRole('list', { name: 'Status changes, newest first' });
     const [latest, first] = within(history).getAllByRole('listitem');
-    expect(latest).toHaveTextContent('Suspicious→Flaky');
+    expect(latest).toHaveTextContent(/Suspicious.*to.*Flaky/);
     expect(latest).toHaveTextContent(
       'Passed only after 1 failed attempt(s) within one run on commit 4a1b2c3',
     );
