@@ -56,6 +56,36 @@ jobs:
           retention-days: 14
           if-no-files-found: ignore
 
+  mutation:
+    name: Mutation testing
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-java@v6
+        with:
+          distribution: temurin
+          java-version: 21
+          cache: maven
+
+      # PIT changes the domain and application code (mutants) and runs the unit tests against each change.
+      # A mutant no test notices is a gap in the tests; below mutation.threshold (90 %) the build fails.
+      - name: PIT
+        run: >-
+          ./mvnw -B -ntp -Djacoco.skip=true
+          -pl services/ingestion-service,services/analysis-service,services/notification-service -am
+          test-compile org.pitest:pitest-maven:mutationCoverage
+
+      - name: Upload mutation reports
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@v7
+        with:
+          name: mutation-reports
+          path: "**/target/pit-reports/"
+          retention-days: 14
+          if-no-files-found: ignore
+
   dashboard:
     name: Dashboard (lint, test, build)
     runs-on: ubuntu-latest

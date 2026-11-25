@@ -28,6 +28,8 @@ export default defineConfig({
       exclude: ['src/**/*.test.{ts,tsx}', 'src/test/**', 'src/main.tsx'],
       reporter: ['text-summary', 'html', 'lcov'],
       reportsDirectory: 'reports/coverage',
+      // A little below the measured values (lines 94.6 %, branches 89.6 %), see docs/testing.md.
+      thresholds: { lines: 92, statements: 92, functions: 90, branches: 85 },
     },
   },
 });

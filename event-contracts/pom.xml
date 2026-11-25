@@ -14,6 +14,12 @@
     <name>TestPulse :: Event Contracts</name>
     <description>Kafka event schemas shared by all services. Plain Java, no framework dependencies.</description>
 
+    <properties>
+        <!-- Less logic than the services; values measured in CI, see docs/testing.md -->
+        <coverage.line.minimum>0.85</coverage.line.minimum>
+        <coverage.branch.minimum>0.70</coverage.branch.minimum>
+    </properties>
+
     <dependencies>
         <!-- Test only: verifies the JSON wire format. The contracts themselves stay dependency free. -->
         <dependency>

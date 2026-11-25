@@ -46,6 +46,11 @@
         <checkstyle.version>14.4.0</checkstyle.version>
         <spotbugs-maven-plugin.version>4.10.5.0</spotbugs-maven-plugin.version>
         <jacoco.version>0.8.16</jacoco.version>
+
+        <!-- Quality thresholds; reasoning in docs/testing.md -->
+        <coverage.line.minimum>0.95</coverage.line.minimum>
+        <coverage.branch.minimum>0.90</coverage.branch.minimum>
+        <mutation.threshold>90</mutation.threshold>
         <pitest.version>1.30.2</pitest.version>
         <pitest-junit5-plugin.version>1.2.3</pitest-junit5-plugin.version>
 
@@ -117,6 +122,8 @@
                         </outputFormats>
                         <timestampedReports>false</timestampedReports>
                         <failWhenNoMutations>false</failWhenNoMutations>
+                        <!-- Share of mutants the unit tests must kill in domain and application code -->
+                        <mutationThreshold>${mutation.threshold}</mutationThreshold>
                     </configuration>
                 </plugin>
             </plugins>
@@ -217,7 +224,11 @@
                 </executions>
             </plugin>
 
-            <!-- Coverage of unit and integration tests together; report only, thresholds come in Phase 5 -->
+            <!--
+                Coverage of unit and integration tests together, checked at verify. The minimums sit a little below
+                the measured values: they catch untested code being added, without failing on every refactoring.
+                A module overrides coverage.line.minimum and coverage.branch.minimum where it has less logic.
+            -->
             <plugin>
                 <groupId>org.jacoco</groupId>
                 <artifactId>jacoco-maven-plugin</artifactId>
@@ -235,6 +246,32 @@
                         <goals>
                             <goal>report</goal>
                         </goals>
+                    </execution>
+                    <execution>
+                        <id>check</id>
+                        <phase>verify</phase>
+                        <goals>
+                            <goal>check</goal>
+                        </goals>
+                        <configuration>
+                            <rules>
+                                <rule>
+                                    <element>BUNDLE</element>
+                                    <limits>
+                                        <limit>
+                                            <counter>LINE</counter>
+                                            <value>COVEREDRATIO</value>
+                                            <minimum>${coverage.line.minimum}</minimum>
+                                        </limit>
+                                        <limit>
+                                            <counter>BRANCH</counter>
+                                            <value>COVEREDRATIO</value>
+                                            <minimum>${coverage.branch.minimum}</minimum>
+                                        </limit>
+                                    </limits>
+                                </rule>
+                            </rules>
+                        </configuration>
                     </execution>
                 </executions>
             </plugin>

@@ -64,6 +64,9 @@
     </dependencies>
 
     <properties>
+        <!-- Less logic than the services; values measured in CI, see docs/testing.md -->
+        <coverage.line.minimum>0.80</coverage.line.minimum>
+        <coverage.branch.minimum>0.75</coverage.branch.minimum>
         <mockito.agent.argLine>-javaagent:${org.mockito:mockito-core:jar}</mockito.agent.argLine>
     </properties>
 </project>

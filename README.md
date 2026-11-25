@@ -183,10 +183,11 @@ init script only runs on an empty volume: `docker compose down -v`.
 
 ```bash
 ./mvnw verify          # full quality pipeline, same as CI
+./mvnw verify -DskipITs -Djacoco.skip   # quick: without Docker, integration tests and the coverage check
 ```
 
 ```bash
-# mutation testing for one service, on demand
+# mutation testing for one service (CI runs it for all services)
 ./mvnw -pl services/ingestion-service -am test-compile org.pitest:pitest-maven:mutationCoverage
 ```
 
@@ -246,8 +247,8 @@ Every pull request runs the full pipeline in [GitHub Actions](.github/workflows/
 | Unit tests | JUnit 5, Mockito, AssertJ | any failure |
 | Integration tests | Testcontainers (PostgreSQL 18, Kafka 4.4, Mailpit) | any failure |
 | Static analysis | SpotBugs | a medium or high priority finding |
-| Coverage | JaCoCo | report only for now; thresholds in Phase 5 |
-| Mutation testing | PIT | on demand for now; thresholds in Phase 5 |
+| Coverage | JaCoCo (unit and integration tests together), Vitest | services below 95 % of lines or 90 % of branches; dashboard below 92 % / 85 % |
+| Mutation testing | PIT on domain and application code | fewer than 90 % of mutants killed |
 | Dashboard code | TypeScript (strict), ESLint (type-checked rules, jsx-a11y), Prettier | any error or warning |
 | Dashboard tests | Vitest, Testing Library, MSW | any failure, or a request without a mock |
 | Accessibility | axe-core in the page tests, axe in Chromium end to end | a WCAG 2.2 A/AA violation |
