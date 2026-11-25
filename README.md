@@ -29,6 +29,9 @@ The value is shown with real data: TestPulse analyses **its own CI runs** and th
 
 ## Architecture
 
+C4 diagrams (context, containers, components), the path of one run through the system and its failure modes are in
+[docs/architecture.md](docs/architecture.md).
+
 ```mermaid
 flowchart LR
     ci["GitHub Actions<br/>(JUnit XML artifacts)"] --> ingestion
@@ -268,7 +271,8 @@ Every pull request runs the full pipeline in [GitHub Actions](.github/workflows/
 The architecture rules are tested themselves: a compliant sample service must pass and each kind of violation must be
 rejected ([tests](architecture-rules/src/test/java/io/github/yagmurpazi/testpulse/architecture/HexagonalArchitectureTest.java)).
 
-The dashboard's testing strategy is described in [ADR-0010](docs/adr/0010-frontend-testing-strategy.md).
+The testing strategy across all services, the reasoning behind each threshold and the rules that keep the tests
+deterministic are in [docs/testing.md](docs/testing.md).
 
 **Dogfooding:** CI uploads its JUnit XML reports (`junit-reports`, `junit-reports-dashboard`, `junit-reports-e2e`)
 also for failed runs.
