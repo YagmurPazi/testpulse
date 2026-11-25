@@ -17,7 +17,7 @@ export default defineConfig({
     environment: 'jsdom',
     globals: true,
     setupFiles: ['./src/test/setup.ts'],
-    include: ['src/**/*.test.{ts,tsx}'],
+    include: ['src/**/*.test.{ts,tsx}', 'tokens/**/*.test.ts'],
     // Dates are rendered in the local time zone; tests pin it so they behave the same on every machine.
     env: { TZ: 'UTC' },
     // The JUnit report feeds TestPulse's own analysis, like the Surefire reports of the services.

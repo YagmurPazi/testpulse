@@ -22,7 +22,8 @@
   --quarantined-bg: #ece7fa;
 
   --passed: #2f9e5b;
-  --failed: #d6453d;
+  /* Also used as text: at least 4.5:1 on the light surfaces (WCAG AA). */
+  --failed: #c4372f;
   --skipped: #9aa3ae;
 
   --radius: 8px;
@@ -52,6 +53,8 @@
     --flaky-bg: #3d1a17;
     --quarantined: #b9a4ff;
     --quarantined-bg: #2a2142;
+
+    --failed: #ff7b72;
   }
 }
 
