@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="io.example.checkout.CheckoutServiceTest" tests="4" time="1.9">
+  <testcase name="calculatesTotal" classname="io.example.checkout.CheckoutServiceTest" time="0.012"/>
+  <testcase name="appliesDiscount" classname="io.example.checkout.CheckoutServiceTest" time="1.503">
+    <error message="Read timed out after 1500 ms" type="java.net.SocketTimeoutException">java.net.SocketTimeoutException: Read timed out after 1500 ms
+	at io.example.checkout.PricingClient.discountFor(PricingClient.java:58)</error>
+  </testcase>
+  <testcase name="rejectsExpiredCoupon" classname="io.example.checkout.CheckoutServiceTest" time="0.008"/>
+  <testcase name="sendsConfirmationMail" classname="io.example.checkout.CheckoutServiceTest" time="0.041">
+    <skipped message="mail server not available on CI"/>
+  </testcase>
+</testsuite>
