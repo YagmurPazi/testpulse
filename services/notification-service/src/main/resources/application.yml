@@ -1,6 +1,24 @@
 spring:
   application:
     name: notification-service
+  # Local development defaults; containers override these through environment variables.
+  datasource:
+    url: jdbc:postgresql://localhost:5432/notification
+    username: notification
+    password: notification
+  kafka:
+    bootstrap-servers: localhost:9092
+    consumer:
+      group-id: notification-service
+      # A new consumer group reads the topic from the start; the maximum age below keeps old changes quiet.
+      auto-offset-reset: earliest
+    listener:
+      # One consumer per partition of testpulse.test-status-changes.
+      concurrency: 3
+  mail:
+    # Mailpit captures every e-mail locally (http://localhost:8025).
+    host: localhost
+    port: 1025
 
 server:
   port: 8083
@@ -14,3 +32,16 @@ management:
     health:
       probes:
         enabled: true
+
+# Who is notified about what; reasoning in ADR-0011.
+testpulse:
+  notification:
+    dashboard-url: http://localhost:3000
+    max-age: 24h
+    email:
+      enabled: true
+      from: testpulse@localhost
+      to: team@localhost
+    slack:
+      # An incoming webhook URL enables Slack; set SLACK_WEBHOOK_URL, never commit it.
+      webhook-url: ${SLACK_WEBHOOK_URL:}
