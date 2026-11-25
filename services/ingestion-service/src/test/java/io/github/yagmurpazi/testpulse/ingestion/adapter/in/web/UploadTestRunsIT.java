@@ -2,7 +2,7 @@ package io.github.yagmurpazi.testpulse.ingestion.adapter.in.web;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import io.github.yagmurpazi.testpulse.ingestion.PostgresIntegrationTest;
+import io.github.yagmurpazi.testpulse.ingestion.IntegrationTest;
 import java.io.IOException;
 import java.io.InputStream;
 import org.junit.jupiter.api.BeforeEach;
@@ -18,7 +18,7 @@ import org.springframework.web.client.RestClient;
 import tools.jackson.databind.JsonNode;
 
 /** Real HTTP uploads of this repository's own CI reports, through to PostgreSQL and the outbox. */
-class UploadTestRunsIT extends PostgresIntegrationTest {
+class UploadTestRunsIT extends IntegrationTest {
 
     private static final String FAILSAFE = "/reports/ci/failsafe-ingestion-it.xml";
     private static final String SUREFIRE = "/reports/ci/surefire-architecture-rules.xml";

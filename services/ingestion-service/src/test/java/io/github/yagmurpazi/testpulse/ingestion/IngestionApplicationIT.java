@@ -7,7 +7,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /** Smoke test: the service starts against a real PostgreSQL and all migrations are applied. */
-class IngestionApplicationIT extends PostgresIntegrationTest {
+class IngestionApplicationIT extends IntegrationTest {
 
     @Autowired
     private Flyway flyway;

@@ -7,12 +7,16 @@ import org.springframework.context.annotation.Import;
 import org.springframework.jdbc.core.simple.JdbcClient;
 
 /**
- * Base for integration tests against a real PostgreSQL. All subclasses share one Spring context and therefore one
- * container; tables are emptied before each test.
+ * Base for integration tests against real PostgreSQL and Kafka. All subclasses share one Spring context and
+ * therefore one set of containers; tables are emptied before each test.
+ *
+ * <p>The scheduled outbox relay is disabled so tests decide when events are published.
  */
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-@Import(PostgresTestcontainersConfiguration.class)
-public abstract class PostgresIntegrationTest {
+@SpringBootTest(
+        webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
+        properties = "testpulse.outbox.relay.enabled=false")
+@Import(TestcontainersConfiguration.class)
+public abstract class IntegrationTest {
 
     @Autowired
     protected JdbcClient jdbc;

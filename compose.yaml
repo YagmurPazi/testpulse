@@ -102,6 +102,7 @@ services:
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/ingestion
       SPRING_DATASOURCE_USERNAME: ingestion
       SPRING_DATASOURCE_PASSWORD: ingestion
+      SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:19092
     depends_on:
       kafka:
         condition: service_healthy

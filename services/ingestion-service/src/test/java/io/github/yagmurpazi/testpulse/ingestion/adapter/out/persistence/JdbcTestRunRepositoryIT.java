@@ -2,7 +2,7 @@ package io.github.yagmurpazi.testpulse.ingestion.adapter.out.persistence;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import io.github.yagmurpazi.testpulse.ingestion.PostgresIntegrationTest;
+import io.github.yagmurpazi.testpulse.ingestion.IntegrationTest;
 import io.github.yagmurpazi.testpulse.ingestion.application.port.out.TestRunRepository;
 import io.github.yagmurpazi.testpulse.ingestion.domain.RunIdentity;
 import io.github.yagmurpazi.testpulse.ingestion.domain.TestCaseResult;
@@ -23,7 +23,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.support.TransactionTemplate;
 
-class JdbcTestRunRepositoryIT extends PostgresIntegrationTest {
+class JdbcTestRunRepositoryIT extends IntegrationTest {
 
     @Autowired
     private TestRunRepository repository;

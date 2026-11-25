@@ -5,7 +5,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import io.github.yagmurpazi.testpulse.events.TestRunIngested;
 import io.github.yagmurpazi.testpulse.events.Topics;
-import io.github.yagmurpazi.testpulse.ingestion.PostgresIntegrationTest;
+import io.github.yagmurpazi.testpulse.ingestion.IntegrationTest;
 import io.github.yagmurpazi.testpulse.ingestion.application.port.in.IngestTestRunCommand;
 import io.github.yagmurpazi.testpulse.ingestion.application.port.in.IngestTestRunUseCase;
 import io.github.yagmurpazi.testpulse.ingestion.application.port.in.IngestionResult;
@@ -22,7 +22,7 @@ import org.springframework.transaction.support.TransactionTemplate;
 import tools.jackson.databind.json.JsonMapper;
 
 /** The whole ingestion path against PostgreSQL: run, results and outbox event share one transaction. */
-class IngestionTransactionIT extends PostgresIntegrationTest {
+class IngestionTransactionIT extends IntegrationTest {
 
     @Autowired
     private IngestTestRunUseCase ingestTestRun;
