@@ -275,3 +275,86 @@ jobs:
           path: dashboard/reports/e2e/
           retention-days: 90
           if-no-files-found: warn
+
+  screenshots:
+    name: Dashboard screenshots
+    # Only on a manual run of this workflow: screenshots change when the dashboard does, not on every push.
+    # The images come from the docker job's cache; the result is an artifact to commit to docs/images.
+    if: github.event_name == 'workflow_dispatch'
+    needs: docker
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: docker/setup-buildx-action@v4
+
+      # The same images and cache scopes as the CI workflow's image builds.
+      - name: Build ingestion-service image
+        uses: docker/build-push-action@v7
+        env: &screenshot-no-build-record
+          DOCKER_BUILD_RECORD_UPLOAD: false
+        with:
+          context: .
+          file: services/Dockerfile
+          build-args: MODULE=ingestion-service
+          tags: testpulse/ingestion-service:local
+          load: true
+          cache-from: type=gha,scope=ingestion-service
+
+      - name: Build analysis-service image
+        uses: docker/build-push-action@v7
+        env: *screenshot-no-build-record
+        with:
+          context: .
+          file: services/Dockerfile
+          build-args: MODULE=analysis-service
+          tags: testpulse/analysis-service:local
+          load: true
+          cache-from: type=gha,scope=analysis-service
+
+      - name: Build notification-service image
+        uses: docker/build-push-action@v7
+        env: *screenshot-no-build-record
+        with:
+          context: .
+          file: services/Dockerfile
+          build-args: MODULE=notification-service
+          tags: testpulse/notification-service:local
+          load: true
+          cache-from: type=gha,scope=notification-service
+
+      - name: Build dashboard image
+        uses: docker/build-push-action@v7
+        env: *screenshot-no-build-record
+        with:
+          context: dashboard
+          file: dashboard/Dockerfile
+          tags: testpulse/dashboard:local
+          load: true
+          cache-from: type=gha,scope=dashboard
+
+      - name: Start the stack and upload the demo runs
+        run: |
+          docker compose up --no-build --detach --wait --wait-timeout 300 dashboard notification-service
+          docker compose run --rm --no-deps seed
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: dashboard/.nvmrc
+          cache: npm
+          cache-dependency-path: dashboard/package-lock.json
+
+      - name: Take screenshots
+        working-directory: dashboard
+        run: |
+          npm ci --no-audit --no-fund
+          npx playwright install --with-deps chromium
+          npm run screenshots
+
+      - name: Upload screenshots
+        uses: actions/upload-artifact@v7
+        with:
+          name: screenshots
+          path: docs/images/
+          retention-days: 7
