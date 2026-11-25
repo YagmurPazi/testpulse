@@ -13,6 +13,8 @@ consequences we accept. Format: [MADR](https://adr.github.io/madr/), see [ADR-00
 | [0006](0006-transactional-outbox.md) | Transactional outbox for publishing events | Accepted |
 | [0007](0007-flakiness-detection-and-test-status.md) | Flakiness detection and the test status lifecycle | Accepted |
 | [0008](0008-idempotent-consumer-and-error-handling.md) | Idempotent event consumption and error handling | Accepted |
+| [0009](0009-dashboard-architecture.md) | Dashboard architecture | Accepted |
+| [0010](0010-frontend-testing-strategy.md) | Frontend testing strategy | Accepted |
 
 A new ADR gets the next number and starts as `Proposed`. Accepted ADRs are not rewritten; a changed decision gets a
 new ADR that supersedes the old one.

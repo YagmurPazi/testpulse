@@ -7,8 +7,8 @@
 
 TestPulse detects **flaky tests** from CI test reports and tracks test health over time.
 
-> **Status: Phase 2 (analysis).** Reports are ingested, flaky tests are detected and tracked through their
-> lifecycle, and a query API serves the results. Notifications and the dashboard follow; see the [roadmap](#roadmap).
+> **Status: Phase 3 (dashboard).** Reports are ingested, flaky tests are detected and tracked through their
+> lifecycle, and a dashboard shows why each test is flaky. Notifications follow; see the [roadmap](#roadmap).
 
 ## The problem
 
@@ -21,7 +21,8 @@ TestPulse:
 - detects flaky tests from evidence, e.g. a test that both passed and failed on the same commit,
   or one that keeps flipping between pass and fail ([ADR-0007](docs/adr/0007-flakiness-detection-and-test-status.md)),
 - moves each test through a lifecycle: `Stable → Suspicious → Flaky → Quarantined`, with a reason for every change,
-- will notify the team (Slack, e-mail) when a test changes state, and show trends on a dashboard.
+- shows each repository's tests, failure trend and the reason behind every status change on a dashboard,
+- will notify the team (Slack, e-mail) when a test changes state.
 
 The value is shown with real data: TestPulse analyses **its own CI runs** and those of open source Java projects.
 
@@ -46,7 +47,7 @@ flowchart LR
     kafka --> analysis
     analysis -- "TestStatusChanged" --> kafka
     kafka --> notification
-    dashboard -- "query API" --> analysis
+    dashboard -- "query API (same origin, via nginx)" --> analysis
     ingestion --- dbi
     analysis --- dba
     notification --> slack["Slack"]
@@ -73,6 +74,7 @@ same commit).
 
 | What | Where |
 |---|---|
+| **Dashboard** | http://localhost:3000 |
 | ingestion-service | http://localhost:8081/actuator/health |
 | analysis-service | http://localhost:8082/actuator/health |
 | notification-service | http://localhost:8083/actuator/health |
@@ -130,6 +132,19 @@ curl -s http://localhost:8082/api/v1/repositories/acme/checkout/tests?status=FLA
 
 Every status change is also published as a `TestStatusChanged` event on `testpulse.test-status-changes`.
 
+## Dashboard
+
+http://localhost:3000 shows the same results, without curl:
+
+- **Repositories:** test counts per status, the repositories with flaky tests first.
+- **Repository:** failed and passed-after-rerun executions per day (7, 30 or 90 days) and the tests, filtered by
+  status. Filters live in the URL, so a filtered view can be shared as a link.
+- **Test:** the latest results as a strip, the status history with the reason of every change, the executions per
+  commit and attempt, and the quarantine and release actions.
+
+nginx serves the static bundle and proxies `/api/` to analysis-service, so the browser talks to a single origin
+([ADR-0009](docs/adr/0009-dashboard-architecture.md)).
+
 ## Development
 
 Requires JDK 21 and Docker (integration tests start real containers).
@@ -143,6 +158,21 @@ Requires JDK 21 and Docker (integration tests start real containers).
 ./mvnw -pl services/ingestion-service -am test-compile org.pitest:pitest-maven:mutationCoverage
 ```
 
+The dashboard needs Node.js 24 or later ([`.nvmrc`](dashboard/.nvmrc): 26):
+
+```bash
+cd dashboard
+npm ci
+npm run dev            # http://localhost:5173, proxies /api/ to analysis-service on :8082
+npm test               # unit, page and accessibility tests (Vitest, MSW, axe)
+npm run lint && npm run typecheck
+```
+
+```bash
+# end-to-end tests against the running stack (docker compose up), once: npx playwright install chromium
+cd dashboard && npm run e2e
+```
+
 ### Repository layout
 
 ```
@@ -154,6 +184,7 @@ services/
   analysis-service/    flakiness detection, test state machine, query API
   notification-service/ Slack and e-mail notifications
   Dockerfile           one multi-stage image definition for all services
+dashboard/             React single page app, nginx image, Playwright end-to-end tests
 infra/                 local infrastructure (PostgreSQL init scripts)
 demo/runs/             demo CI runs, uploaded by the seed container
 scripts/               seed.sh and other helper scripts
@@ -185,12 +216,19 @@ Every pull request runs the full pipeline in [GitHub Actions](.github/workflows/
 | Static analysis | SpotBugs | a medium or high priority finding |
 | Coverage | JaCoCo | report only for now; thresholds in Phase 5 |
 | Mutation testing | PIT | on demand for now; thresholds in Phase 5 |
+| Dashboard code | TypeScript (strict), ESLint (type-checked rules, jsx-a11y), Prettier | any error or warning |
+| Dashboard tests | Vitest, Testing Library, MSW | any failure, or a request without a mock |
+| Accessibility | axe-core in the page tests, axe in Chromium end to end | a WCAG 2.2 A/AA violation |
+| End-to-end | Playwright against the compose stack, no retries | any failure |
 | Container images | Docker Buildx | an image fails to build |
 
 The architecture rules are tested themselves: a compliant sample service must pass and each kind of violation must be
 rejected ([tests](architecture-rules/src/test/java/io/github/yagmurpazi/testpulse/architecture/HexagonalArchitectureTest.java)).
 
-**Dogfooding:** CI uploads its JUnit XML reports as the `junit-reports` artifact, also for failed runs.
+The dashboard's testing strategy is described in [ADR-0010](docs/adr/0010-frontend-testing-strategy.md).
+
+**Dogfooding:** CI uploads its JUnit XML reports (`junit-reports`, `junit-reports-dashboard`, `junit-reports-e2e`)
+also for failed runs.
 TestPulse's GitHub importer will analyse them.
 
 ## Architecture decisions
@@ -207,6 +245,8 @@ Decisions and their trade-offs are recorded in [`docs/adr`](docs/adr/README.md).
 | [0006](docs/adr/0006-transactional-outbox.md) | Transactional outbox for publishing events |
 | [0007](docs/adr/0007-flakiness-detection-and-test-status.md) | Flakiness detection and the test status lifecycle |
 | [0008](docs/adr/0008-idempotent-consumer-and-error-handling.md) | Idempotent event consumption and error handling |
+| [0009](docs/adr/0009-dashboard-architecture.md) | Dashboard architecture: single page app behind a same-origin proxy |
+| [0010](docs/adr/0010-frontend-testing-strategy.md) | Frontend testing strategy |
 
 ## Known limitations
 
@@ -221,13 +261,15 @@ Decisions and their trade-offs are recorded in [`docs/adr`](docs/adr/README.md).
 - Records that can never be processed are skipped and only logged; a dead letter topic is planned after the MVP
   ([ADR-0008](docs/adr/0008-idempotent-consumer-and-error-handling.md)).
 - A renamed test starts a new history, and manual quarantines live in the database, not in the event stream.
+- The dashboard refreshes on navigation and focus, not live, and its API types are written by hand
+  ([ADR-0009](docs/adr/0009-dashboard-architecture.md)).
 
 ## Roadmap
 
 - [x] **Phase 0:** project skeleton, quality pipeline, local environment, first ADRs
 - [x] **Phase 1:** ingestion-service: JUnit XML parsing, upload endpoint, `TestRunIngested` events via outbox
 - [x] **Phase 2:** analysis-service: test history, flakiness strategies, test state machine, query API
-- [ ] **Phase 3:** dashboard
+- [x] **Phase 3:** dashboard: repositories, trends, test history, quarantine; accessibility and end-to-end tests
 - [ ] **Phase 4:** notification-service, GitHub Actions importer
 - [ ] **Phase 5:** C4 diagrams, coverage and mutation thresholds, demo data and video
 

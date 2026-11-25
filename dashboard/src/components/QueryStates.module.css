@@ -1,0 +1,18 @@
+.loading {
+  color: var(--text-muted);
+}
+
+.error {
+  padding: var(--space-4);
+  border: 1px solid var(--flaky);
+  border-radius: var(--radius);
+  background: var(--flaky-bg);
+}
+
+.error p {
+  margin: 0 0 var(--space-2);
+}
+
+.errorTitle {
+  font-weight: 600;
+}
