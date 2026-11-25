@@ -10,7 +10,7 @@ import org.springframework.jdbc.core.simple.JdbcClient;
  * Base for integration tests against a real PostgreSQL. All subclasses share one Spring context and therefore one
  * container; tables are emptied before each test.
  */
-@SpringBootTest
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @Import(PostgresTestcontainersConfiguration.class)
 public abstract class PostgresIntegrationTest {
 

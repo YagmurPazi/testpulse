@@ -1,9 +1,10 @@
-package io.github.yagmurpazi.testpulse.ingestion.adapter.in.report;
+package io.github.yagmurpazi.testpulse.ingestion.adapter.out.report;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.Assertions.tuple;
 
+import io.github.yagmurpazi.testpulse.ingestion.application.port.out.InvalidReportException;
 import io.github.yagmurpazi.testpulse.ingestion.domain.TestCaseResult;
 import io.github.yagmurpazi.testpulse.ingestion.domain.TestOutcome;
 import java.io.ByteArrayInputStream;
@@ -169,14 +170,14 @@ class SurefireReportParserTest {
         @Test
         void rejectsExternalEntityInsteadOfReadingLocalFiles() {
             assertThatThrownBy(() -> parse("/reports/samples/xxe-external-entity.xml"))
-                    .isInstanceOf(ReportParseException.class)
+                    .isInstanceOf(InvalidReportException.class)
                     .hasMessageNotContaining("root:");
         }
 
         @Test
         void rejectsEntityExpansion() {
             assertThatThrownBy(() -> parse("/reports/samples/billion-laughs.xml"))
-                    .isInstanceOf(ReportParseException.class);
+                    .isInstanceOf(InvalidReportException.class);
         }
     }
 
@@ -188,33 +189,33 @@ class SurefireReportParserTest {
             String unclosedTestCase = "<testsuite name=\"S\"><testcase name=\"t\" classname=\"C\"></testsuite>";
 
             assertThatThrownBy(() -> parseString(unclosedTestCase))
-                    .isInstanceOf(ReportParseException.class)
+                    .isInstanceOf(InvalidReportException.class)
                     .hasMessageStartingWith("Malformed XML report");
         }
 
         @Test
         void rejectsOtherXmlDocuments() {
             assertThatThrownBy(() -> parseString("<html><body/></html>"))
-                    .isInstanceOf(ReportParseException.class)
+                    .isInstanceOf(InvalidReportException.class)
                     .hasMessageContaining("root element is <html>");
         }
 
         @Test
         void rejectsEmptyInput() {
-            assertThatThrownBy(() -> parseString("")).isInstanceOf(ReportParseException.class);
+            assertThatThrownBy(() -> parseString("")).isInstanceOf(InvalidReportException.class);
         }
 
         @Test
         void rejectsTestCaseWithoutName() {
             assertThatThrownBy(() -> parseString("<testsuite name=\"S\"><testcase classname=\"C\"/></testsuite>"))
-                    .isInstanceOf(ReportParseException.class)
+                    .isInstanceOf(InvalidReportException.class)
                     .hasMessageContaining("without name");
         }
 
         @Test
         void rejectsTestCaseWithoutClassOrSuiteName() {
             assertThatThrownBy(() -> parseString("<testsuite><testcase name=\"t\"/></testsuite>"))
-                    .isInstanceOf(ReportParseException.class)
+                    .isInstanceOf(InvalidReportException.class)
                     .hasMessageContaining("without classname");
         }
 
@@ -234,7 +235,7 @@ class SurefireReportParserTest {
     @CsvSource({"-1", "abc", "1e999999999"})
     void rejectsInvalidTimes(String seconds) {
         assertThatThrownBy(() -> SurefireReportParser.parseDuration(seconds))
-                .isInstanceOf(ReportParseException.class);
+                .isInstanceOf(InvalidReportException.class);
     }
 
     private List<TestCaseResult> parse(String resource) throws IOException {

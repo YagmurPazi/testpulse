@@ -1,9 +1,12 @@
 package io.github.yagmurpazi.testpulse.ingestion.config;
 
 import io.github.yagmurpazi.testpulse.ingestion.application.port.in.IngestTestRunUseCase;
+import io.github.yagmurpazi.testpulse.ingestion.application.port.in.UploadReportsUseCase;
+import io.github.yagmurpazi.testpulse.ingestion.application.port.out.ReportParser;
 import io.github.yagmurpazi.testpulse.ingestion.application.port.out.TestRunEventPublisher;
 import io.github.yagmurpazi.testpulse.ingestion.application.port.out.TestRunRepository;
 import io.github.yagmurpazi.testpulse.ingestion.application.service.IngestTestRunService;
+import io.github.yagmurpazi.testpulse.ingestion.application.service.UploadReportsService;
 import java.time.Clock;
 import java.time.Duration;
 import java.util.UUID;
@@ -27,5 +30,10 @@ class IngestionConfiguration {
             Clock clock, PlatformTransactionManager transactionManager) {
         IngestTestRunService service = new IngestTestRunService(repository, eventPublisher, clock, UUID::randomUUID);
         return new TransactionalIngestTestRunUseCase(service, new TransactionTemplate(transactionManager));
+    }
+
+    @Bean
+    UploadReportsUseCase uploadReportsUseCase(ReportParser parser, IngestTestRunUseCase ingestTestRunUseCase) {
+        return new UploadReportsService(parser, ingestTestRunUseCase);
     }
 }

@@ -10,6 +10,14 @@ spring:
       data-source-properties:
         # Lets the PostgreSQL driver turn JDBC batches into multi-row INSERTs.
         reWriteBatchedInserts: true
+  servlet:
+    multipart:
+      # Upper bound for uploads: protects memory and keeps events well below Kafka's message size limit.
+      max-file-size: 10MB
+      max-request-size: 50MB
+  mvc:
+    problemdetails:
+      enabled: true
 
 server:
   port: 8081

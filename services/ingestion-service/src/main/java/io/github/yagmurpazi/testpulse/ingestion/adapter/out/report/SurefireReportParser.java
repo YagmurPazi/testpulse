@@ -1,5 +1,7 @@
-package io.github.yagmurpazi.testpulse.ingestion.adapter.in.report;
+package io.github.yagmurpazi.testpulse.ingestion.adapter.out.report;
 
+import io.github.yagmurpazi.testpulse.ingestion.application.port.out.InvalidReportException;
+import io.github.yagmurpazi.testpulse.ingestion.application.port.out.ReportParser;
 import io.github.yagmurpazi.testpulse.ingestion.domain.TestCaseResult;
 import io.github.yagmurpazi.testpulse.ingestion.domain.TestOutcome;
 import java.io.InputStream;
@@ -14,6 +16,7 @@ import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
+import org.springframework.stereotype.Component;
 
 /**
  * Reads JUnit XML reports in the Surefire/Failsafe format, also accepting the aggregated {@code <testsuites>} form.
@@ -25,18 +28,19 @@ import javax.xml.stream.XMLStreamReader;
  * {@code flakyFailure}/{@code flakyError} (the test passed in the end) and
  * {@code rerunFailure}/{@code rerunError} (the test failed on every attempt).
  */
-public final class SurefireReportParser {
+@Component
+public final class SurefireReportParser implements ReportParser {
 
     private static final int MAX_MESSAGE_SCAN_LENGTH = 4_096;
 
-    /** Parses one report. The caller owns and closes the stream. */
+    @Override
     public List<TestCaseResult> parse(InputStream input) {
         XMLStreamReader reader = null;
         try {
             reader = secureFactory().createXMLStreamReader(input);
             return new Parse(reader).run();
         } catch (XMLStreamException e) {
-            throw new ReportParseException("Malformed XML report: " + e.getMessage(), e);
+            throw new InvalidReportException("Malformed XML report: " + e.getMessage(), e);
         } finally {
             closeQuietly(reader);
         }
@@ -86,7 +90,7 @@ public final class SurefireReportParser {
                 }
             }
             if (!rootSeen) {
-                throw new ReportParseException("Not a JUnit XML report: no root element");
+                throw new InvalidReportException("Not a JUnit XML report: no root element");
             }
             return List.copyOf(results);
         }
@@ -94,7 +98,7 @@ public final class SurefireReportParser {
         private void onStart(String element) {
             if (!rootSeen) {
                 if (!"testsuite".equals(element) && !"testsuites".equals(element)) {
-                    throw new ReportParseException("Not a JUnit XML report: root element is <" + element + ">");
+                    throw new InvalidReportException("Not a JUnit XML report: root element is <" + element + ">");
                 }
                 rootSeen = true;
             }
@@ -140,7 +144,7 @@ public final class SurefireReportParser {
             }
             String suiteName = suiteNames.peek();
             if (suiteName == null || suiteName.isBlank()) {
-                throw new ReportParseException("<testcase> without classname outside a named <testsuite>");
+                throw new InvalidReportException("<testcase> without classname outside a named <testsuite>");
             }
             return suiteName;
         }
@@ -148,7 +152,7 @@ public final class SurefireReportParser {
         private String required(String name) {
             String value = attribute(name);
             if (value == null || value.isBlank()) {
-                throw new ReportParseException("<testcase> without " + name + " attribute");
+                throw new InvalidReportException("<testcase> without " + name + " attribute");
             }
             return value;
         }
@@ -166,11 +170,11 @@ public final class SurefireReportParser {
         try {
             BigDecimal millis = new BigDecimal(seconds.replace(",", "").trim()).movePointRight(3);
             if (millis.signum() < 0) {
-                throw new ReportParseException("Negative test time: " + seconds);
+                throw new InvalidReportException("Negative test time: " + seconds);
             }
             return Duration.ofMillis(millis.setScale(0, RoundingMode.HALF_UP).longValueExact());
         } catch (NumberFormatException | ArithmeticException e) {
-            throw new ReportParseException("Invalid test time: " + seconds, e);
+            throw new InvalidReportException("Invalid test time: " + seconds, e);
         }
     }
 
