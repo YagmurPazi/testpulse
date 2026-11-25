@@ -1,0 +1,25 @@
+.flaky {
+  color: var(--flaky);
+  font-weight: 700;
+}
+
+.quarantined {
+  color: var(--quarantined);
+  font-weight: 700;
+}
+
+.suspicious {
+  color: var(--suspicious);
+  font-weight: 700;
+}
+
+.empty {
+  padding: var(--space-5);
+}
+
+.empty pre {
+  overflow-x: auto;
+  padding: var(--space-3);
+  background: var(--bg);
+  border-radius: var(--radius);
+}

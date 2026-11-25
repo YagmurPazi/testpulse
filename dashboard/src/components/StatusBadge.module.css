@@ -1,0 +1,28 @@
+.badge {
+  display: inline-block;
+  padding: 1px var(--space-2);
+  border-radius: 999px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.stable {
+  color: var(--stable);
+  background: var(--stable-bg);
+}
+
+.suspicious {
+  color: var(--suspicious);
+  background: var(--suspicious-bg);
+}
+
+.flaky {
+  color: var(--flaky);
+  background: var(--flaky-bg);
+}
+
+.quarantined {
+  color: var(--quarantined);
+  background: var(--quarantined-bg);
+}
