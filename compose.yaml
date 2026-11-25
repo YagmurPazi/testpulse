@@ -98,6 +98,10 @@ services:
         MODULE: ingestion-service
     ports:
       - "8081:8081"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/ingestion
+      SPRING_DATASOURCE_USERNAME: ingestion
+      SPRING_DATASOURCE_PASSWORD: ingestion
     depends_on:
       kafka:
         condition: service_healthy
