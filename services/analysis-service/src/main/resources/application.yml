@@ -14,6 +14,13 @@ spring:
       enabled: true
   kafka:
     bootstrap-servers: localhost:9092
+    consumer:
+      group-id: analysis-service
+      # A new consumer group starts at the beginning of the topic: the first start replays all runs.
+      auto-offset-reset: earliest
+    listener:
+      # One consumer per partition of testpulse.test-runs.
+      concurrency: 3
     producer:
       acks: all
       compression-type: zstd

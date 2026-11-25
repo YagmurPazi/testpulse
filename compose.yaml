@@ -139,6 +139,9 @@ services:
         condition: service_healthy
       postgres:
         condition: service_healthy
+      # ingestion-service creates testpulse.test-runs on startup; consume only once it exists
+      ingestion-service:
+        condition: service_healthy
 
   notification-service:
     <<: *service-defaults
