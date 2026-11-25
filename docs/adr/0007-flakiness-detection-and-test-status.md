@@ -1,7 +1,7 @@
 # 0007. Flakiness detection and the test status lifecycle
 
 - Status: Accepted
-- Date: 2026-11-26
+- Date: 2026-11-25
 
 ## Context and problem statement
 
