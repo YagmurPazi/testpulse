@@ -6,6 +6,10 @@ spring:
     url: jdbc:postgresql://localhost:5432/ingestion
     username: ingestion
     password: ingestion
+    hikari:
+      data-source-properties:
+        # Lets the PostgreSQL driver turn JDBC batches into multi-row INSERTs.
+        reWriteBatchedInserts: true
 
 server:
   port: 8081
