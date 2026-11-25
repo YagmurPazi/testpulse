@@ -10,6 +10,6 @@ import io.github.yagmurpazi.testpulse.architecture.HexagonalArchitecture;
 class ArchitectureTest {
 
     @ArchTest
-    static final ArchRule hexagonalArchitecture =
+    static final ArchRule HEXAGONAL_ARCHITECTURE =
             HexagonalArchitecture.rulesFor(AnalysisApplication.class.getPackageName());
 }

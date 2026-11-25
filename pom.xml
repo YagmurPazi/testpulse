@@ -39,6 +39,22 @@
         <java.version>21</java.version>
         <archunit.version>1.5.1</archunit.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+
+        <!-- Quality tooling -->
+        <maven-checkstyle-plugin.version>3.6.0</maven-checkstyle-plugin.version>
+        <checkstyle.version>14.4.0</checkstyle.version>
+        <spotbugs-maven-plugin.version>4.10.5.0</spotbugs-maven-plugin.version>
+        <jacoco.version>0.8.16</jacoco.version>
+        <pitest.version>1.30.2</pitest.version>
+        <pitest-junit5-plugin.version>1.2.3</pitest-junit5-plugin.version>
+
+        <!-- Shared config lives at the repository root; Maven sets this to the reactor root. -->
+        <quality.config.dir>${maven.multiModuleProjectDirectory}/config</quality.config.dir>
+
+        <!-- Filled in by jacoco:prepare-agent; empty default keeps the build working when JaCoCo is skipped. -->
+        <argLine/>
+        <!-- Overridden in modules whose tests use Mockito -->
+        <mockito.agent.argLine/>
     </properties>
 
     <dependencyManagement>
@@ -60,4 +76,158 @@
             </dependency>
         </dependencies>
     </dependencyManagement>
+
+    <build>
+        <pluginManagement>
+            <plugins>
+                <!-- Mutation testing. Not bound to the lifecycle; run on demand, thresholds come in Phase 5. -->
+                <plugin>
+                    <groupId>org.pitest</groupId>
+                    <artifactId>pitest-maven</artifactId>
+                    <version>${pitest.version}</version>
+                    <dependencies>
+                        <dependency>
+                            <groupId>org.pitest</groupId>
+                            <artifactId>pitest-junit5-plugin</artifactId>
+                            <version>${pitest-junit5-plugin.version}</version>
+                        </dependency>
+                    </dependencies>
+                    <configuration>
+                        <targetClasses>
+                            <param>${project.groupId}.*.domain.*</param>
+                            <param>${project.groupId}.*.application.*</param>
+                        </targetClasses>
+                        <targetTests>
+                            <param>${project.groupId}.*</param>
+                        </targetTests>
+                        <excludedTestClasses>
+                            <param>**.*ApplicationTests</param>
+                            <param>**.ArchitectureTest</param>
+                            <param>**.*IT</param>
+                        </excludedTestClasses>
+                        <outputFormats>
+                            <param>HTML</param>
+                            <param>XML</param>
+                        </outputFormats>
+                        <timestampedReports>false</timestampedReports>
+                        <failWhenNoMutations>false</failWhenNoMutations>
+                    </configuration>
+                </plugin>
+            </plugins>
+        </pluginManagement>
+
+        <plugins>
+            <!-- Mockito as a Java agent instead of self-attaching at runtime (removed in future JDKs). -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-dependency-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>resolve-agent-paths</id>
+                        <goals>
+                            <goal>properties</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <!-- Unit tests: *Test, *Tests -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <configuration>
+                    <argLine>@{argLine} ${mockito.agent.argLine}</argLine>
+                </configuration>
+            </plugin>
+
+            <!-- Integration tests: *IT, run in the integration-test phase -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-failsafe-plugin</artifactId>
+                <configuration>
+                    <argLine>@{argLine} ${mockito.agent.argLine}</argLine>
+                </configuration>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>integration-test</goal>
+                            <goal>verify</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <!-- Code style, checked first so formatting problems fail fast -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-checkstyle-plugin</artifactId>
+                <version>${maven-checkstyle-plugin.version}</version>
+                <dependencies>
+                    <dependency>
+                        <groupId>com.puppycrawl.tools</groupId>
+                        <artifactId>checkstyle</artifactId>
+                        <version>${checkstyle.version}</version>
+                    </dependency>
+                </dependencies>
+                <configuration>
+                    <configLocation>${quality.config.dir}/checkstyle/checkstyle.xml</configLocation>
+                    <includeTestSourceDirectory>true</includeTestSourceDirectory>
+                    <consoleOutput>true</consoleOutput>
+                    <failOnViolation>true</failOnViolation>
+                    <violationSeverity>warning</violationSeverity>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>checkstyle</id>
+                        <phase>validate</phase>
+                        <goals>
+                            <goal>check</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <!-- Static bug detection on main code; medium and high priority findings fail the build -->
+            <plugin>
+                <groupId>com.github.spotbugs</groupId>
+                <artifactId>spotbugs-maven-plugin</artifactId>
+                <version>${spotbugs-maven-plugin.version}</version>
+                <configuration>
+                    <effort>Max</effort>
+                    <threshold>Medium</threshold>
+                    <excludeFilterFile>${quality.config.dir}/spotbugs/exclude.xml</excludeFilterFile>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>spotbugs</id>
+                        <goals>
+                            <goal>check</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <!-- Coverage of unit and integration tests together; report only, thresholds come in Phase 5 -->
+            <plugin>
+                <groupId>org.jacoco</groupId>
+                <artifactId>jacoco-maven-plugin</artifactId>
+                <version>${jacoco.version}</version>
+                <executions>
+                    <execution>
+                        <id>prepare-agent</id>
+                        <goals>
+                            <goal>prepare-agent</goal>
+                        </goals>
+                    </execution>
+                    <execution>
+                        <id>report</id>
+                        <phase>verify</phase>
+                        <goals>
+                            <goal>report</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
 </project>
