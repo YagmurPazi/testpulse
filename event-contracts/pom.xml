@@ -13,4 +13,23 @@
     <artifactId>event-contracts</artifactId>
     <name>TestPulse :: Event Contracts</name>
     <description>Kafka event schemas shared by all services. Plain Java, no framework dependencies.</description>
+
+    <dependencies>
+        <!-- Test only: verifies the JSON wire format. The contracts themselves stay dependency free. -->
+        <dependency>
+            <groupId>tools.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.assertj</groupId>
+            <artifactId>assertj-core</artifactId>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
 </project>
