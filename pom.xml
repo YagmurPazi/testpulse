@@ -30,6 +30,7 @@
     <modules>
         <module>event-contracts</module>
         <module>architecture-rules</module>
+        <module>outbox</module>
         <module>services/ingestion-service</module>
         <module>services/analysis-service</module>
         <module>services/notification-service</module>
@@ -62,6 +63,11 @@
             <dependency>
                 <groupId>io.github.yagmurpazi.testpulse</groupId>
                 <artifactId>event-contracts</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.github.yagmurpazi.testpulse</groupId>
+                <artifactId>outbox</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>

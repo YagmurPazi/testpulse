@@ -1,4 +1,4 @@
-package io.github.yagmurpazi.testpulse.ingestion.adapter.out.outbox;
+package io.github.yagmurpazi.testpulse.outbox;
 
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
@@ -13,11 +13,9 @@ import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.common.KafkaException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.kafka.core.KafkaOperations;
 import org.springframework.kafka.support.SendResult;
-import org.springframework.stereotype.Component;
 import org.springframework.transaction.support.TransactionOperations;
 
 /**
@@ -30,8 +28,7 @@ import org.springframework.transaction.support.TransactionOperations;
  * <p>Only one relay runs at a time, guarded by a PostgreSQL advisory lock. Parallel relays (for example with
  * {@code SKIP LOCKED}) would be faster but could publish two events of the same repository out of order.
  */
-@Component
-public class OutboxRelay {
+public final class OutboxRelay {
 
     /** Header with the event id, so consumers can deduplicate without parsing the payload. */
     public static final String EVENT_ID_HEADER = "eventId";
@@ -47,9 +44,11 @@ public class OutboxRelay {
     private final int batchSize;
     private final Duration sendTimeout;
 
-    OutboxRelay(JdbcClient jdbc, TransactionOperations transaction, KafkaOperations<String, String> kafka,
-            @Value("${testpulse.outbox.relay.batch-size}") int batchSize,
-            @Value("${testpulse.outbox.relay.send-timeout}") Duration sendTimeout) {
+    public OutboxRelay(JdbcClient jdbc, TransactionOperations transaction, KafkaOperations<String, String> kafka,
+            int batchSize, Duration sendTimeout) {
+        if (batchSize < 1) {
+            throw new IllegalArgumentException("batchSize must be positive");
+        }
         this.jdbc = jdbc;
         this.transaction = transaction;
         this.kafka = kafka;
@@ -140,7 +139,7 @@ public class OutboxRelay {
     }
 
     /** Publishing failed; the events stay in the outbox and are retried. */
-    public static class OutboxRelayException extends RuntimeException {
+    public static final class OutboxRelayException extends RuntimeException {
 
         private static final long serialVersionUID = 1L;
 
