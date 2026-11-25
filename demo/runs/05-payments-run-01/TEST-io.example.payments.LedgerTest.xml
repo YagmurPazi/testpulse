@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="io.example.payments.LedgerTest" tests="2" failures="0" errors="1" skipped="0">
+  <testcase name="reconcilesLedger" classname="io.example.payments.LedgerTest" time="0.010">
+    <error message="Connection refused: ledger-db:5432" type="java.net.ConnectException">
+      <stackTrace>java.net.ConnectException: Connection refused: ledger-db:5432</stackTrace>
+    </error>
+  </testcase>
+  <testcase name="validatesIban" classname="io.example.payments.LedgerTest" time="0.047"/>
+</testsuite>
