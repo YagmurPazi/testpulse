@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Surefire with rerunFailingTestsCount: failed twice, passed on the third attempt. -->
+<testsuite name="io.example.CheckoutTest" tests="1" failures="0" errors="0" skipped="0" flakes="1">
+  <testcase name="appliesDiscount" classname="io.example.CheckoutTest" time="0.120">
+    <flakyFailure message="expected: &lt;90&gt; but was: &lt;100&gt;" type="org.opentest4j.AssertionFailedError">
+      <stackTrace>org.opentest4j.AssertionFailedError: expected: &lt;90&gt; but was: &lt;100&gt;
+	at io.example.CheckoutTest.appliesDiscount(CheckoutTest.java:42)</stackTrace>
+    </flakyFailure>
+    <flakyError message="Connection refused" type="java.net.ConnectException">
+      <stackTrace>java.net.ConnectException: Connection refused</stackTrace>
+    </flakyError>
+  </testcase>
+</testsuite>

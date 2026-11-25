@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Surefire with rerunFailingTestsCount: failed on every attempt. -->
+<testsuite name="io.example.CheckoutTest" tests="1" failures="1" errors="0" skipped="0">
+  <testcase name="rejectsExpiredCoupon" classname="io.example.CheckoutTest" time="0.007">
+    <failure message="expected: &lt;400&gt; but was: &lt;500&gt;&#10;second line of the message" type="org.opentest4j.AssertionFailedError">stack trace</failure>
+    <rerunFailure message="expected: &lt;400&gt; but was: &lt;500&gt;" type="org.opentest4j.AssertionFailedError">
+      <stackTrace>stack trace</stackTrace>
+    </rerunFailure>
+    <rerunFailure message="expected: &lt;400&gt; but was: &lt;500&gt;" type="org.opentest4j.AssertionFailedError">
+      <stackTrace>stack trace</stackTrace>
+    </rerunFailure>
+  </testcase>
+</testsuite>
