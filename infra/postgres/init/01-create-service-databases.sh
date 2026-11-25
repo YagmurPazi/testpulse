@@ -15,3 +15,4 @@ SQL
 
 create_service_database ingestion "${INGESTION_DB_PASSWORD}"
 create_service_database analysis "${ANALYSIS_DB_PASSWORD}"
+create_service_database notification "${NOTIFICATION_DB_PASSWORD}"

@@ -70,6 +70,7 @@ services:
       POSTGRES_PASSWORD: postgres
       INGESTION_DB_PASSWORD: ingestion
       ANALYSIS_DB_PASSWORD: analysis
+      NOTIFICATION_DB_PASSWORD: notification
     volumes:
       # PostgreSQL 18+ images keep data under /var/lib/postgresql/<major>/, so mount the parent.
       - postgres-data:/var/lib/postgresql
@@ -116,6 +117,10 @@ services:
       SPRING_DATASOURCE_USERNAME: ingestion
       SPRING_DATASOURCE_PASSWORD: ingestion
       SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:19092
+      # Optional: a GitHub token from the shell enables the GitHub Actions importer, e.g.
+      # GITHUB_TOKEN=$(gh auth token) docker compose up
+      GITHUB_TOKEN: ${GITHUB_TOKEN:-}
+      TESTPULSE_IMPORTER_GITHUB_REPOSITORIES: ${GITHUB_REPOSITORIES:-YagmurPazi/testpulse}
     depends_on:
       kafka:
         condition: service_healthy
@@ -159,11 +164,25 @@ services:
     healthcheck: *service-healthcheck
     environment:
       SERVICE_PORT: 8083
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/notification
+      SPRING_DATASOURCE_USERNAME: notification
+      SPRING_DATASOURCE_PASSWORD: notification
+      SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:19092
+      SPRING_MAIL_HOST: mailpit
+      SPRING_MAIL_PORT: 1025
+      TESTPULSE_NOTIFICATION_DASHBOARD_URL: http://localhost:3000
+      # Optional: an incoming webhook URL from the shell environment enables Slack.
+      SLACK_WEBHOOK_URL: ${SLACK_WEBHOOK_URL:-}
     depends_on:
       kafka:
         condition: service_healthy
+      postgres:
+        condition: service_healthy
       mailpit:
-        condition: service_started
+        condition: service_healthy
+      # analysis-service creates testpulse.test-status-changes on startup; consume only once it exists
+      analysis-service:
+        condition: service_healthy
 
   # Static bundle served by nginx, which also proxies /api/ to analysis-service.
   dashboard:

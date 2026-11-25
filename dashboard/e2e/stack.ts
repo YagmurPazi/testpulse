@@ -68,3 +68,19 @@ function required(env: Map<string, string>, key: string): string {
   }
   return value;
 }
+
+const MAILPIT_URL = process.env['MAILPIT_URL'] ?? 'http://localhost:8025';
+
+/** Waits until notification-service's e-mail with this subject has arrived in Mailpit. */
+export async function expectMail(request: APIRequestContext, subject: string): Promise<void> {
+  await expect
+    .poll(
+      async () => {
+        const response = await request.get(`${MAILPIT_URL}/api/v1/messages?limit=500`);
+        const body = (await response.json()) as { messages: { Subject: string }[] };
+        return body.messages.map((message) => message.Subject);
+      },
+      { message: `e-mail "${subject}"` },
+    )
+    .toContain(subject);
+}

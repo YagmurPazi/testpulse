@@ -143,6 +143,10 @@
                 <artifactId>maven-surefire-plugin</artifactId>
                 <configuration>
                     <argLine>@{argLine} ${mockito.agent.argLine}</argLine>
+                    <!-- Surefire's default Test* pattern would also run integration tests such as TestQueriesIT -->
+                    <excludes>
+                        <exclude>**/*IT.java</exclude>
+                    </excludes>
                 </configuration>
             </plugin>
 

@@ -1,6 +1,8 @@
 import { expect, test } from '@playwright/test';
 import { expectNoAccessibilityViolations } from './accessibility';
-import { FLAKY_TEST, seedFlakyRepository } from './stack';
+import { expectMail, FLAKY_TEST, seedFlakyRepository } from './stack';
+
+const TEST_LABEL = 'CheckoutServiceTest.appliesDiscount';
 
 test('an uploaded flaky test is visible from the overview down to its history', async ({ page, request }) => {
   const repository = await seedFlakyRepository(request, 'browse');
@@ -38,6 +40,10 @@ test('an uploaded flaky test is visible from the overview down to its history', 
     );
     await expectNoAccessibilityViolations(page);
   });
+
+  await test.step('the team was told by e-mail', async () => {
+    await expectMail(request, `[TestPulse] Flaky test: ${TEST_LABEL} in ${repository}`);
+  });
 });
 
 test('a flaky test can be quarantined and released', async ({ page, request }) => {
@@ -51,6 +57,7 @@ test('a flaky test can be quarantined and released', async ({ page, request }) =
     await expect(page.getByRole('group')).toContainText('ignore this test’s result');
     await page.getByRole('button', { name: 'Quarantine test' }).click();
     await expect(page.getByRole('button', { name: 'Release…' })).toBeVisible();
+    await expectMail(request, `[TestPulse] Quarantined: ${TEST_LABEL} in ${repository}`);
   });
 
   await test.step('the decision is stored, with a manual history entry', async () => {
@@ -66,6 +73,7 @@ test('a flaky test can be quarantined and released', async ({ page, request }) =
     await page.getByRole('button', { name: 'Release test' }).click();
     await expect(status).toHaveText('Suspicious');
     await expect(page.getByText('Only flaky tests can be quarantined.', { exact: false })).toBeVisible();
+    await expectMail(request, `[TestPulse] Released from quarantine: ${TEST_LABEL} in ${repository}`);
   });
 });
 
