@@ -1,6 +1,32 @@
 spring:
   application:
     name: analysis-service
+  # Local development defaults; containers override these through environment variables.
+  datasource:
+    url: jdbc:postgresql://localhost:5432/analysis
+    username: analysis
+    password: analysis
+    hikari:
+      data-source-properties:
+        reWriteBatchedInserts: true
+  mvc:
+    problemdetails:
+      enabled: true
+  kafka:
+    bootstrap-servers: localhost:9092
+    consumer:
+      group-id: analysis-service
+      # A new consumer group starts at the beginning of the topic: the first start replays all runs.
+      auto-offset-reset: earliest
+    listener:
+      # One consumer per partition of testpulse.test-runs.
+      concurrency: 3
+    producer:
+      acks: all
+      compression-type: zstd
+      properties:
+        enable.idempotence: true
+        linger.ms: 5
 
 server:
   port: 8082
@@ -14,3 +40,22 @@ management:
     health:
       probes:
         enabled: true
+
+testpulse:
+  kafka:
+    test-status-changes:
+      partitions: 3
+      replication-factor: 1
+  outbox:
+    relay:
+      enabled: true
+      poll-interval: 1s
+  # Flakiness detection; reasoning in ADR-0007.
+  analysis:
+    detection:
+      window: 20
+      min-samples: 5
+      min-flips: 3
+      suspicious-flip-rate: 0.15
+      flaky-flip-rate: 0.3
+      recovery-runs: 10

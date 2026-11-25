@@ -11,6 +11,8 @@ consequences we accept. Format: [MADR](https://adr.github.io/madr/), see [ADR-00
 | [0004](0004-kafka-as-event-backbone.md) | Kafka as the event backbone | Accepted |
 | [0005](0005-event-contracts-and-wire-format.md) | Event contracts and wire format | Accepted |
 | [0006](0006-transactional-outbox.md) | Transactional outbox for publishing events | Accepted |
+| [0007](0007-flakiness-detection-and-test-status.md) | Flakiness detection and the test status lifecycle | Accepted |
+| [0008](0008-idempotent-consumer-and-error-handling.md) | Idempotent event consumption and error handling | Accepted |
 
 A new ADR gets the next number and starts as `Proposed`. Accepted ADRs are not rewritten; a changed decision gets a
 new ADR that supersedes the old one.

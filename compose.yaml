@@ -130,10 +130,17 @@ services:
     healthcheck: *service-healthcheck
     environment:
       SERVICE_PORT: 8082
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/analysis
+      SPRING_DATASOURCE_USERNAME: analysis
+      SPRING_DATASOURCE_PASSWORD: analysis
+      SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:19092
     depends_on:
       kafka:
         condition: service_healthy
       postgres:
+        condition: service_healthy
+      # ingestion-service creates testpulse.test-runs on startup; consume only once it exists
+      ingestion-service:
         condition: service_healthy
 
   notification-service:
