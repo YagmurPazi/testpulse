@@ -7,22 +7,21 @@
 
 TestPulse detects **flaky tests** from CI test reports and tracks test health over time.
 
-> **Status: Phase 1 (ingestion).** Reports can be uploaded, are stored idempotently and published to Kafka.
-> Flakiness detection, notifications and the dashboard are built in the next phases; see the [roadmap](#roadmap).
+> **Status: Phase 2 (analysis).** Reports are ingested, flaky tests are detected and tracked through their
+> lifecycle, and a query API serves the results. Notifications and the dashboard follow; see the [roadmap](#roadmap).
 
 ## The problem
 
 A flaky test passes and fails on the same code. Each false failure costs a re-run, a context switch
 and a bit of trust in the pipeline, until people start ignoring red builds altogether.
 
-TestPulse will:
+TestPulse:
 
-- collect JUnit XML (Surefire format) reports from uploads and from GitHub Actions artifacts,
-- detect flaky tests statistically, e.g. a test that both passed and failed on the same commit,
-  or one that keeps flipping between pass and fail,
-- move each test through a lifecycle: `Stable → Suspicious → Flaky → Quarantined`,
-- notify the team (Slack, e-mail) when a test changes state,
-- show trends on a dashboard.
+- collects JUnit XML (Surefire format) reports from uploads (GitHub Actions artifacts: Phase 4),
+- detects flaky tests from evidence, e.g. a test that both passed and failed on the same commit,
+  or one that keeps flipping between pass and fail ([ADR-0007](docs/adr/0007-flakiness-detection-and-test-status.md)),
+- moves each test through a lifecycle: `Stable → Suspicious → Flaky → Quarantined`, with a reason for every change,
+- will notify the team (Slack, e-mail) when a test changes state, and show trends on a dashboard.
 
 The value is shown with real data: TestPulse analyses **its own CI runs** and those of open source Java projects.
 
@@ -109,6 +108,28 @@ The upload is **idempotent**: `201 Created` for a new run, `200 OK` with the sto
 
 `scripts/seed.sh` uploads the demo runs against a running service.
 
+## Analysis results
+
+analysis-service consumes every ingested run, records each test's executions and evaluates it
+([ADR-0007](docs/adr/0007-flakiness-detection-and-test-status.md)). On its first start it reads the topic from the
+beginning, so runs ingested earlier are analysed too. After `docker compose up`, the demo test
+`CheckoutServiceTest.appliesDiscount` is **flaky**:
+
+```bash
+curl -s http://localhost:8082/api/v1/repositories/acme/checkout/tests?status=FLAKY
+```
+
+| Endpoint | Returns |
+|---|---|
+| `GET /api/v1/repositories` | repositories with test counts per status |
+| `GET /api/v1/repositories/{owner}/{name}/tests?status=` | tests, most severe first, with the reason of the latest change |
+| `GET /api/v1/repositories/{owner}/{name}/trend?days=30` | executions, failures and passes-after-rerun per day |
+| `GET /api/v1/tests/{id}` | latest executions and the full status history of a test |
+| `POST /api/v1/tests/{id}/quarantine` | flaky → quarantined (`409` for any other status) |
+| `POST /api/v1/tests/{id}/release` | quarantined → suspicious |
+
+Every status change is also published as a `TestStatusChanged` event on `testpulse.test-status-changes`.
+
 ## Development
 
 Requires JDK 21 and Docker (integration tests start real containers).
@@ -126,6 +147,7 @@ Requires JDK 21 and Docker (integration tests start real containers).
 
 ```
 architecture-rules/    shared ArchUnit rules, used by every service in test scope
+outbox/                transactional outbox writer and relay, auto-configured in the services that publish
 event-contracts/       Kafka event schemas shared by the services
 services/
   ingestion-service/   receives reports, publishes TestRunIngested
@@ -183,6 +205,8 @@ Decisions and their trade-offs are recorded in [`docs/adr`](docs/adr/README.md).
 | [0004](docs/adr/0004-kafka-as-event-backbone.md) | Kafka as the event backbone |
 | [0005](docs/adr/0005-event-contracts-and-wire-format.md) | Event contracts and wire format |
 | [0006](docs/adr/0006-transactional-outbox.md) | Transactional outbox for publishing events |
+| [0007](docs/adr/0007-flakiness-detection-and-test-status.md) | Flakiness detection and the test status lifecycle |
+| [0008](docs/adr/0008-idempotent-consumer-and-error-handling.md) | Idempotent event consumption and error handling |
 
 ## Known limitations
 
@@ -194,12 +218,15 @@ Decisions and their trade-offs are recorded in [`docs/adr`](docs/adr/README.md).
   A deployment would need at least API keys per repository.
 - **At-least-once delivery:** an event can reach Kafka twice after a failure; consumers deduplicate on its `eventId`
   ([ADR-0006](docs/adr/0006-transactional-outbox.md)).
+- Records that can never be processed are skipped and only logged; a dead letter topic is planned after the MVP
+  ([ADR-0008](docs/adr/0008-idempotent-consumer-and-error-handling.md)).
+- A renamed test starts a new history, and manual quarantines live in the database, not in the event stream.
 
 ## Roadmap
 
 - [x] **Phase 0:** project skeleton, quality pipeline, local environment, first ADRs
 - [x] **Phase 1:** ingestion-service: JUnit XML parsing, upload endpoint, `TestRunIngested` events via outbox
-- [ ] **Phase 2:** analysis-service: test history, flakiness strategies, test state machine, query API
+- [x] **Phase 2:** analysis-service: test history, flakiness strategies, test state machine, query API
 - [ ] **Phase 3:** dashboard
 - [ ] **Phase 4:** notification-service, GitHub Actions importer
 - [ ] **Phase 5:** C4 diagrams, coverage and mutation thresholds, demo data and video
