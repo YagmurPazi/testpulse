@@ -7,9 +7,12 @@
 
 TestPulse detects **flaky tests** from CI test reports and tracks test health over time.
 
-> **Status: Phase 4 (notifications and GitHub importer).** Reports are uploaded or imported from GitHub Actions,
-> flaky tests are detected and tracked through their lifecycle, the team is notified by e-mail or Slack, and a
-> dashboard shows why each test is flaky. Next: documentation and quality thresholds; see the [roadmap](#roadmap).
+> **Status: MVP complete.** Reports are uploaded or imported from GitHub Actions, flaky tests are detected and tracked
+> through their lifecycle, the team is notified by e-mail or Slack, and a dashboard shows why each test is flaky.
+> A five-minute tour: [docs/demo.md](docs/demo.md).
+
+![A repository in the dashboard: failures per day and its tests, the flaky one first, each with the reason of its
+latest status change](docs/images/repository.png)
 
 ## The problem
 
@@ -187,6 +190,12 @@ http://localhost:3000 shows the same results, without curl:
 nginx serves the static bundle and proxies `/api/` to analysis-service, so the browser talks to a single origin
 ([ADR-0009](docs/adr/0009-dashboard-architecture.md)).
 
+| Repositories | A test that became flaky and recovered |
+|---|---|
+| ![Repositories with test counts per status](docs/images/repositories.png) | ![A test page with its latest results, status history and executions](docs/images/test.png) |
+
+The screenshots are rendered from the demo data by a manual run of the CI workflow.
+
 ## Development
 
 Requires JDK 21 and Docker (integration tests start real containers).
@@ -322,7 +331,7 @@ Decisions and their trade-offs are recorded in [`docs/adr`](docs/adr/README.md).
 - [x] **Phase 2:** analysis-service: test history, flakiness strategies, test state machine, query API
 - [x] **Phase 3:** dashboard: repositories, trends, test history, quarantine; accessibility and end-to-end tests
 - [x] **Phase 4:** notification-service (e-mail, Slack), GitHub Actions importer
-- [ ] **Phase 5:** C4 diagrams, coverage and mutation thresholds, demo data and video
+- [x] **Phase 5:** C4 diagrams, testing strategy, coverage and mutation thresholds, demo data and walkthrough
 
 ## License
 
