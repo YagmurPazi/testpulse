@@ -1,6 +1,11 @@
 spring:
   application:
     name: ingestion-service
+  # Local development defaults; containers override these through environment variables.
+  datasource:
+    url: jdbc:postgresql://localhost:5432/ingestion
+    username: ingestion
+    password: ingestion
 
 server:
   port: 8081

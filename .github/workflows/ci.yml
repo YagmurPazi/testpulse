@@ -1,0 +1,82 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+# A newer push to the same branch cancels the older, now irrelevant run.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: Build, test and analyse
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-java@v6
+        with:
+          distribution: temurin
+          java-version: 21
+          cache: maven
+
+      # One command runs the whole quality pipeline in lifecycle order:
+      # Checkstyle -> compile -> unit tests + ArchUnit -> SpotBugs
+      # -> integration tests with Testcontainers -> JaCoCo report.
+      - name: Maven verify
+        run: ./mvnw -B -ntp verify
+
+      # Dogfooding: TestPulse will import these reports to analyse its own test history.
+      # Uploaded even when the build fails, because failing runs are exactly what flaky detection needs.
+      - name: Upload JUnit reports
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@v7
+        with:
+          name: junit-reports
+          path: |
+            **/target/surefire-reports/TEST-*.xml
+            **/target/failsafe-reports/TEST-*.xml
+          retention-days: 90
+          if-no-files-found: warn
+
+      - name: Upload coverage reports
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@v7
+        with:
+          name: coverage-reports
+          path: "**/target/site/jacoco/"
+          retention-days: 14
+          if-no-files-found: ignore
+
+  docker:
+    name: Docker image (${{ matrix.module }})
+    needs: build
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        module: [ingestion-service, analysis-service, notification-service]
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: docker/setup-buildx-action@v4
+
+      # Build only; publishing images to a registry is out of MVP scope.
+      - uses: docker/build-push-action@v7
+        with:
+          context: .
+          file: services/Dockerfile
+          build-args: MODULE=${{ matrix.module }}
+          tags: testpulse/${{ matrix.module }}:ci
+          push: false
+          cache-from: type=gha,scope=${{ matrix.module }}
+          cache-to: type=gha,mode=max,scope=${{ matrix.module }}
