@@ -66,8 +66,8 @@ const FAILURES = {
 };
 
 function sha(commit) {
-  // 40 hex characters, unique per commit, recognisable in the dashboard: c0ffee01..., c0ffee02...
-  return `c0ffee${String(commit).padStart(2, '0')}`.padEnd(40, '0');
+  // 40 hex characters; the commit number sits in the first seven, which is what the dashboard shows: c001ffe, c002ffe
+  return `c0${String(commit).padStart(2, '0')}ffee`.padEnd(40, '0');
 }
 
 function outcome(test, runIndex) {
