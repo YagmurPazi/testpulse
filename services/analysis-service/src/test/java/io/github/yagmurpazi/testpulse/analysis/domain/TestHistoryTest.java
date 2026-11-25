@@ -28,6 +28,15 @@ class TestHistoryTest {
     }
 
     @Test
+    void keepsOnlyExecutionsStrictlyAfterAMoment() {
+        TestHistory history = Histories.of("PFP");
+        java.time.Instant second = history.executions().get(1).executedAt();
+
+        assertThat(history.after(second).executions()).containsExactly(history.executions().get(2));
+        assertThat(history.after(second).key()).isEqualTo(history.key());
+    }
+
+    @Test
     void countsCleanPassesAtTheEndSkippingSkips() {
         assertThat(Histories.of("FPPSP").trailingCleanPasses()).isEqualTo(3);
     }

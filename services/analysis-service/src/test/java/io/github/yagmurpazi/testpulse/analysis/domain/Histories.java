@@ -49,6 +49,11 @@ final class Histories {
         return this;
     }
 
+    /** Event time of the latest execution added. */
+    Instant lastTime() {
+        return clock;
+    }
+
     TestHistory build() {
         return new TestHistory(KEY, executions);
     }

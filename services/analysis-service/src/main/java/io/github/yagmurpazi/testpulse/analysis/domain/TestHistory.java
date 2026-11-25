@@ -1,5 +1,6 @@
 package io.github.yagmurpazi.testpulse.analysis.domain;
 
+import java.time.Instant;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
@@ -21,6 +22,11 @@ public record TestHistory(TestKey key, List<TestExecution> executions) {
     /** Executions in which the test actually ran (not skipped), oldest first. */
     public List<TestExecution> ran() {
         return executions.stream().filter(execution -> execution.outcome().ran()).toList();
+    }
+
+    /** Executions strictly after the given moment: the evidence collected since a status change. */
+    public TestHistory after(Instant moment) {
+        return new TestHistory(key, executions.stream().filter(e -> e.executedAt().isAfter(moment)).toList());
     }
 
     /** Number of clean passes at the end of the history, ignoring skipped executions. */
