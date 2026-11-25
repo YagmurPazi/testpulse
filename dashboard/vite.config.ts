@@ -9,7 +9,6 @@ const analysisUrl = process.env.ANALYSIS_URL ?? 'http://localhost:8082';
 export default defineConfig({
   plugins: [react()],
   server: {
-    port: 3000,
     proxy: {
       '/api': analysisUrl,
     },

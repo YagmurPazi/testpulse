@@ -56,15 +56,75 @@ jobs:
           retention-days: 14
           if-no-files-found: ignore
 
+  dashboard:
+    name: Dashboard (lint, test, build)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    defaults:
+      run:
+        working-directory: dashboard
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: dashboard/.nvmrc
+          cache: npm
+          cache-dependency-path: dashboard/package-lock.json
+
+      - run: npm ci --no-audit --no-fund
+
+      # Cheapest checks first: formatting, lint and types fail in seconds.
+      - run: npm run format:check
+      - run: npm run lint
+      - run: npm run typecheck
+      - run: npm run test:coverage
+      - run: npm run build
+
+      # Same dogfooding as the services: Vitest writes JUnit XML.
+      - name: Upload JUnit reports
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@v7
+        with:
+          name: junit-reports-dashboard
+          path: dashboard/reports/junit/
+          retention-days: 90
+          if-no-files-found: warn
+
+      - name: Upload coverage report
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@v7
+        with:
+          name: coverage-report-dashboard
+          path: dashboard/reports/coverage/
+          retention-days: 14
+          if-no-files-found: ignore
+
   docker:
-    name: Docker image (${{ matrix.module }})
-    needs: build
+    name: Docker image (${{ matrix.image }})
+    needs: [build, dashboard]
     runs-on: ubuntu-latest
     timeout-minutes: 20
     strategy:
       fail-fast: false
       matrix:
-        module: [ingestion-service, analysis-service, notification-service]
+        include:
+          - image: ingestion-service
+            context: .
+            file: services/Dockerfile
+            build-args: MODULE=ingestion-service
+          - image: analysis-service
+            context: .
+            file: services/Dockerfile
+            build-args: MODULE=analysis-service
+          - image: notification-service
+            context: .
+            file: services/Dockerfile
+            build-args: MODULE=notification-service
+          - image: dashboard
+            context: dashboard
+            file: dashboard/Dockerfile
+            build-args: ""
     steps:
       - uses: actions/checkout@v7
 
@@ -76,10 +136,11 @@ jobs:
           # Do not upload a build record artifact per image; it only clutters the run's artifacts.
           DOCKER_BUILD_RECORD_UPLOAD: false
         with:
-          context: .
-          file: services/Dockerfile
-          build-args: MODULE=${{ matrix.module }}
-          tags: testpulse/${{ matrix.module }}:ci
+          context: ${{ matrix.context }}
+          file: ${{ matrix.file }}
+          build-args: ${{ matrix.build-args }}
+          tags: testpulse/${{ matrix.image }}:ci
           push: false
-          cache-from: type=gha,scope=${{ matrix.module }}
-          cache-to: type=gha,mode=max,scope=${{ matrix.module }}
+          cache-from: type=gha,scope=${{ matrix.image }}
+          cache-to: type=gha,mode=max,scope=${{ matrix.image }}
+

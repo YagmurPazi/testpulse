@@ -5,6 +5,8 @@
 
 name: testpulse
 
+# Services are built locally and tagged testpulse/<service>:local; CI builds the same tags from its
+# image cache and starts the stack with --no-build.
 x-service-defaults: &service-defaults
   build: &service-build
     context: .
@@ -100,6 +102,7 @@ services:
 
   ingestion-service:
     <<: *service-defaults
+    image: testpulse/ingestion-service:local
     build:
       <<: *service-build
       args:
@@ -121,6 +124,7 @@ services:
 
   analysis-service:
     <<: *service-defaults
+    image: testpulse/analysis-service:local
     build:
       <<: *service-build
       args:
@@ -145,6 +149,7 @@ services:
 
   notification-service:
     <<: *service-defaults
+    image: testpulse/notification-service:local
     build:
       <<: *service-build
       args:
@@ -159,6 +164,23 @@ services:
         condition: service_healthy
       mailpit:
         condition: service_started
+
+  # Static bundle served by nginx, which also proxies /api/ to analysis-service.
+  dashboard:
+    image: testpulse/dashboard:local
+    build:
+      context: dashboard
+    restart: unless-stopped
+    ports:
+      - "3000:8080"
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q --spider http://127.0.0.1:8080/healthz || exit 1"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+    depends_on:
+      analysis-service:
+        condition: service_healthy
 
   # ---------- Demo data ----------
 
