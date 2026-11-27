@@ -151,6 +151,25 @@ class OutboxRelayIT {
         }
     }
 
+    @Test
+    void marksAnEventKafkaCanNeverAcceptAsRejectedAndPublishesTheEventsBehindIt() {
+        String key = "acme/too-large-" + UUID.randomUUID();
+        UUID tooLarge = UUID.randomUUID();
+        UUID behind = UUID.randomUUID();
+        Instant now = Instant.now();
+        // above Kafka's default 1 MB message limit
+        writer.append(tooLarge, TOPIC, key, new SampleEvent(tooLarge, "x".repeat(1_200_000)), now);
+        writer.append(behind, TOPIC, key, new SampleEvent(behind, "after the large one"), now.plusMillis(1));
+
+        assertThat(relay.relayPending()).isEqualTo(1);
+
+        assertThat(consume(withEventId(behind), 1)).hasSize(1);
+        assertThat(pending()).isZero();
+        assertThat(jdbc.sql("SELECT rejection FROM outbox_event WHERE id = :id AND rejected_at IS NOT NULL")
+                .param("id", tooLarge).query(String.class).single()).startsWith("RecordTooLargeException");
+        assertThat(relay.relayPending()).as("a rejected event is not retried").isZero();
+    }
+
     record SampleEvent(UUID id, String text) {
     }
 
@@ -159,7 +178,8 @@ class OutboxRelayIT {
     }
 
     private int pending() {
-        return jdbc.sql("SELECT count(*) FROM outbox_event WHERE published_at IS NULL").query(Integer.class).single();
+        return jdbc.sql("SELECT count(*) FROM outbox_event WHERE published_at IS NULL AND rejected_at IS NULL")
+                .query(Integer.class).single();
     }
 
     private static Predicate<ConsumerRecord<String, String>> withEventId(UUID eventId) {
