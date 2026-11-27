@@ -10,6 +10,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.json.JsonMapper;
 import tools.jackson.databind.node.ObjectNode;
@@ -17,12 +19,15 @@ import tools.jackson.databind.node.ObjectNode;
 /**
  * Contract tests for the {@link TestRunIngested} wire format.
  *
- * <p>The golden file {@code contracts/test-run-ingested-v1.json} is the published v1 format. If one of these tests
- * fails after a change, the change breaks consumers: keep the old format or introduce a new schema version.
+ * <p>The golden file {@code contracts/test-run-ingested-v1.json} is the v1 format as first published;
+ * {@code contracts/test-run-ingested-v1-parts.json} is v1 with the optional {@code part} and {@code parts} fields added
+ * later. If one of these tests fails after a change, the change breaks consumers: keep the old format or introduce a
+ * new schema version.
  */
 class TestRunIngestedContractTest {
 
     private static final String V1_FIXTURE = "/contracts/test-run-ingested-v1.json";
+    private static final String V1_PARTS_FIXTURE = "/contracts/test-run-ingested-v1-parts.json";
 
     private final JsonMapper mapper = JsonMapper.builder().build();
 
@@ -34,11 +39,38 @@ class TestRunIngestedContractTest {
     }
 
     @Test
-    void writesPublishedV1Format() throws IOException {
-        // Parse the written JSON instead of using valueToTree, so both trees use the same numeric node types.
-        JsonNode written = mapper.readTree(mapper.writeValueAsString(sampleEvent()));
+    void readsAnEventWrittenBeforePartsExistedAsTheWholeRun() throws IOException {
+        TestRunIngested event = mapper.readValue(fixture(), TestRunIngested.class);
 
-        assertThat(written).isEqualTo(mapper.readTree(fixture()));
+        assertThat(event.part()).isEqualTo(1);
+        assertThat(event.parts()).isEqualTo(1);
+    }
+
+    @Test
+    void readsPartOfASplitRun() throws IOException {
+        TestRunIngested event = mapper.readValue(fixture(V1_PARTS_FIXTURE), TestRunIngested.class);
+
+        assertThat(event).isEqualTo(secondOfThreeParts());
+    }
+
+    @Test
+    void writesV1FormatWithParts() throws IOException {
+        // Parse the written JSON instead of using valueToTree, so both trees use the same numeric node types.
+        JsonNode written = mapper.readTree(mapper.writeValueAsString(secondOfThreeParts()));
+
+        assertThat(written).isEqualTo(mapper.readTree(fixture(V1_PARTS_FIXTURE)));
+    }
+
+    @ParameterizedTest
+    @CsvSource({"0, 1", "2, 1", "-1, 2", "1, 0"})
+    void rejectsAPartOutsideTheParts(int part, int parts) {
+        TestRunIngested whole = sampleEvent();
+
+        assertThatThrownBy(() -> new TestRunIngested(whole.eventId(), whole.schemaVersion(), whole.occurredAt(),
+                whole.runId(), whole.repository(), whole.commitSha(), whole.branch(), whole.externalRunId(),
+                whole.attempt(), whole.results(), part, parts))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("part must be between 1 and parts");
     }
 
     @Test
@@ -112,7 +144,18 @@ class TestRunIngestedContractTest {
                 results);
     }
 
+    private static TestRunIngested secondOfThreeParts() {
+        TestRunIngested whole = sampleEvent();
+        return new TestRunIngested(whole.eventId(), whole.schemaVersion(), whole.occurredAt(), whole.runId(),
+                whole.repository(), whole.commitSha(), whole.branch(), whole.externalRunId(), whole.attempt(),
+                whole.results(), 2, 3);
+    }
+
     private static InputStream fixture() {
-        return TestRunIngestedContractTest.class.getResourceAsStream(V1_FIXTURE);
+        return fixture(V1_FIXTURE);
+    }
+
+    private static InputStream fixture(String resource) {
+        return TestRunIngestedContractTest.class.getResourceAsStream(resource);
     }
 }

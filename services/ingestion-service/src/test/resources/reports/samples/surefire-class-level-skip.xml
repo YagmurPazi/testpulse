@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- From apache/cassandra-java-driver CI (run 45650397699), properties removed: a JUnit 4 class skipped as a whole. -->
+<testsuite xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://maven.apache.org/surefire/maven-failsafe-plugin/xsd/failsafe-test-report-3.0.xsd" version="3.0" name="com.datastax.oss.driver.internal.osgi.OsgiSnappyIT" time="0" tests="1" errors="0" skipped="1" failures="0">
+  <testcase name="" classname="com.datastax.oss.driver.internal.osgi.OsgiSnappyIT" time="0">
+    <skipped message="Test requires one of:&#10;  - Apache Cassandra less than 4.0.0&#10;but configuration is Apache Cassandra 4.0.21."/>
+  </testcase>
+</testsuite>

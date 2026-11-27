@@ -6,8 +6,12 @@ CREATE TABLE outbox_event (
     message_key  VARCHAR(200) NOT NULL,
     payload      TEXT         NOT NULL,
     created_at   TIMESTAMPTZ  NOT NULL,
-    published_at TIMESTAMPTZ
+    published_at TIMESTAMPTZ,
+    -- set when Kafka can never accept the event (larger than its message limit); the relay skips it
+    rejected_at  TIMESTAMPTZ,
+    rejection    TEXT
 );
 
--- The relay only ever looks for unpublished events, oldest first.
-CREATE INDEX ix_outbox_event_unpublished ON outbox_event (created_at) WHERE published_at IS NULL;
+-- The relay only ever looks for pending events, oldest first.
+CREATE INDEX ix_outbox_event_pending ON outbox_event (created_at)
+    WHERE published_at IS NULL AND rejected_at IS NULL;

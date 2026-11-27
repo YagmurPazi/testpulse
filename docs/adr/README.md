@@ -17,6 +17,7 @@ consequences we accept. Format: [MADR](https://adr.github.io/madr/), see [ADR-00
 | [0010](0010-frontend-testing-strategy.md) | Frontend testing strategy | Accepted |
 | [0011](0011-notification-delivery.md) | Notification delivery | Accepted |
 | [0012](0012-github-actions-importer.md) | Importing CI runs from GitHub Actions | Accepted |
+| [0013](0013-large-runs-and-rejected-events.md) | Large runs and events Kafka cannot accept | Accepted |
 
 A new ADR gets the next number and starts as `Proposed`. Accepted ADRs are not rewritten; a changed decision gets a
 new ADR that supersedes the old one.

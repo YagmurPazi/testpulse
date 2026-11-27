@@ -27,9 +27,16 @@ import org.springframework.stereotype.Component;
  * <p>Surefire rerun elements are counted as failed attempts:
  * {@code flakyFailure}/{@code flakyError} (the test passed in the end) and
  * {@code rerunFailure}/{@code rerunError} (the test failed on every attempt).
+ *
+ * <p>A {@code <testcase>} with an empty or missing name is a result of the whole class: Surefire writes one when a
+ * class is skipped or fails before any of its tests runs (for example a JUnit 4 class rule or assumption). It is
+ * kept under the name {@value #CLASS_LEVEL_TEST_NAME}, so the report is not rejected and the result is not lost.
  */
 @Component
 public final class SurefireReportParser implements ReportParser {
+
+    /** Name of the result of a whole test class, see the class comment. */
+    public static final String CLASS_LEVEL_TEST_NAME = "(class)";
 
     private static final int MAX_MESSAGE_SCAN_LENGTH = 4_096;
 
@@ -113,7 +120,7 @@ public final class SurefireReportParser implements ReportParser {
                 String name = attribute("name");
                 suiteNames.push(name == null ? "" : name);
             } else if ("testcase".equals(element)) {
-                testCase = new TestCaseBuilder(className(), required("name"), parseDuration(attribute("time")));
+                testCase = new TestCaseBuilder(className(), testName(), parseDuration(attribute("time")));
                 depthInTestCase = 0;
             }
         }
@@ -149,12 +156,9 @@ public final class SurefireReportParser implements ReportParser {
             return suiteName;
         }
 
-        private String required(String name) {
-            String value = attribute(name);
-            if (value == null || value.isBlank()) {
-                throw new InvalidReportException("<testcase> without " + name + " attribute");
-            }
-            return value;
+        private String testName() {
+            String name = attribute("name");
+            return name == null || name.isBlank() ? CLASS_LEVEL_TEST_NAME : name;
         }
 
         private String attribute(String name) {

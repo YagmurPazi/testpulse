@@ -92,6 +92,17 @@ class SurefireReportParserTest {
         }
 
         @Test
+        void keepsAClassSkippedAsAWholeInsteadOfRejectingTheReport() throws IOException {
+            List<TestCaseResult> results = parse("/reports/samples/surefire-class-level-skip.xml");
+
+            assertThat(results).singleElement().satisfies(result -> {
+                assertThat(result.className()).isEqualTo("com.datastax.oss.driver.internal.osgi.OsgiSnappyIT");
+                assertThat(result.testName()).isEqualTo(SurefireReportParser.CLASS_LEVEL_TEST_NAME);
+                assertThat(result.outcome()).isEqualTo(TestOutcome.SKIPPED);
+            });
+        }
+
+        @Test
         void readsPlaywrightReportWithoutXmlDeclaration() throws IOException {
             List<TestCaseResult> results = parse("/reports/ci/playwright-e2e-passed.xml");
 
@@ -268,10 +279,10 @@ class SurefireReportParserTest {
         }
 
         @Test
-        void rejectsTestCaseWithoutName() {
-            assertThatThrownBy(() -> parseString("<testsuite name=\"S\"><testcase classname=\"C\"/></testsuite>"))
-                    .isInstanceOf(InvalidReportException.class)
-                    .hasMessageContaining("without name");
+        void readsATestCaseWithoutNameAsAResultOfTheWholeClass() {
+            assertThat(parseString("<testsuite name=\"S\"><testcase classname=\"C\"/></testsuite>"))
+                    .extracting(TestCaseResult::className, TestCaseResult::testName)
+                    .containsExactly(tuple("C", SurefireReportParser.CLASS_LEVEL_TEST_NAME));
         }
 
         @Test

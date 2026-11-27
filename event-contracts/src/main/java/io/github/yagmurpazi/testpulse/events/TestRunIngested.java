@@ -15,6 +15,10 @@ import java.util.UUID;
  *
  * <p>Delivery is at least once: consumers must deduplicate on {@link #eventId()}.
  *
+ * <p>A large run is split into several events ({@link #part()} of {@link #parts()}), because Kafka limits the size of
+ * a message. Each part carries the run's metadata and a share of its results; all results of one test are in the same
+ * part. Parts have their own event ids and can be processed independently: every test is evaluated on its own.
+ *
  * @param eventId       unique per event; the idempotency key for consumers
  * @param schemaVersion version of this contract, see {@link #SCHEMA_VERSION}
  * @param occurredAt    when the run was stored by ingestion-service
@@ -24,7 +28,9 @@ import java.util.UUID;
  * @param branch        branch name
  * @param externalRunId identifier of the run in the CI system, or a content hash for manual uploads
  * @param attempt       CI attempt number, starting at 1; a re-run of the same CI run increments it
- * @param results       all test case results of the run
+ * @param results       the test case results of the run, or of this part of it
+ * @param part          number of this part, from 1; 1 in events written before parts existed
+ * @param parts         number of parts of the run; 1 in events written before parts existed
  */
 public record TestRunIngested(
         UUID eventId,
@@ -36,7 +42,9 @@ public record TestRunIngested(
         String branch,
         String externalRunId,
         int attempt,
-        List<TestCaseResult> results) {
+        List<TestCaseResult> results,
+        Integer part,
+        Integer parts) {
 
     /**
      * Current contract version. Additive, optional fields keep the version; renaming, removing or changing the
@@ -59,5 +67,23 @@ public record TestRunIngested(
             throw new IllegalArgumentException("attempt must be at least 1");
         }
         results = List.copyOf(results);
+        if (part == null && parts == null) {
+            // written before parts existed: the whole run in one event. Boxed types, because a missing primitive
+            // would fail deserialization and make every older event unreadable.
+            part = 1;
+            parts = 1;
+        }
+        Objects.requireNonNull(part, "part");
+        Objects.requireNonNull(parts, "parts");
+        if (part < 1 || part > parts) {
+            throw new IllegalArgumentException("part must be between 1 and parts, was " + part + " of " + parts);
+        }
+    }
+
+    /** The whole run in one event. */
+    public TestRunIngested(UUID eventId, int schemaVersion, Instant occurredAt, UUID runId, String repository,
+            String commitSha, String branch, String externalRunId, int attempt, List<TestCaseResult> results) {
+        this(eventId, schemaVersion, occurredAt, runId, repository, commitSha, branch, externalRunId, attempt,
+                results, 1, 1);
     }
 }

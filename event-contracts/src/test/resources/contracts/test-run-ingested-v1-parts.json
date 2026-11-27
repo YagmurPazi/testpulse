@@ -1,0 +1,31 @@
+{
+  "eventId": "5f0c6a1e-2b7d-4c3a-9e8f-1a2b3c4d5e6f",
+  "schemaVersion": 1,
+  "occurredAt": "2026-11-25T12:00:00Z",
+  "runId": "0b8e7d6c-5a4f-4e3d-8c2b-1a0f9e8d7c6b",
+  "repository": "YagmurPazi/testpulse",
+  "commitSha": "3be2117c0ffee0000000000000000000000000ab",
+  "branch": "main",
+  "externalRunId": "45619835962",
+  "attempt": 2,
+  "results": [
+    {
+      "className": "io.github.example.CheckoutServiceTest",
+      "testName": "appliesDiscount",
+      "outcome": "PASSED",
+      "durationMillis": 42,
+      "rerunFailures": 1,
+      "failureMessage": null
+    },
+    {
+      "className": "io.github.example.CheckoutServiceTest",
+      "testName": "rejectsExpiredCoupon",
+      "outcome": "FAILED",
+      "durationMillis": 7,
+      "rerunFailures": 0,
+      "failureMessage": "expected: <400> but was: <500>"
+    }
+  ],
+  "part": 2,
+  "parts": 3
+}
