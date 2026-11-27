@@ -147,6 +147,7 @@ sequenceDiagram
 |---|---|---|
 | 2 | the same run is uploaded twice | the identity exists, the stored run is returned, no event ([ADR-0005](adr/0005-event-contracts-and-wire-format.md)) |
 | 4 | Kafka is down | events wait in the outbox and are published when it is back |
+| 4 | Kafka can never accept an event (above its message limit) | marked rejected and logged; the events behind it continue. Large runs are split into parts so this does not happen in practice ([ADR-0013](adr/0013-large-runs-and-rejected-events.md)) |
 | 5 | an event arrives twice | the processed-event marker makes the second one a no-op ([ADR-0008](adr/0008-idempotent-consumer-and-error-handling.md)) |
 | 5 | an event can never be processed | skipped and logged, the partition continues |
 | 5 | the analysis database is down | retried without limit: nothing is lost, the order is kept |

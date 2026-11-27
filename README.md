@@ -125,7 +125,9 @@ Kafka, each service with its own database. It is also a showcase of how such a s
   and SMTP, accessibility, and end to end through the whole stack, all in CI with enforced thresholds
   ([docs/testing.md](docs/testing.md)).
 - **Dogfooding:** CI keeps its own JUnit reports, and TestPulse can analyse its own test history.
-- **Every decision written down:** 12 architecture decision records ([docs/adr](docs/adr/README.md)).
+- **Tried on real data:** a run of apache/cassandra-java-driver (5,912 tests) found two bugs, both fixed
+  ([ADR-0013](docs/adr/0013-large-runs-and-rejected-events.md)).
+- **Every decision written down:** 13 architecture decision records ([docs/adr](docs/adr/README.md)).
 
 ## Architecture
 
@@ -403,6 +405,7 @@ Decisions and their trade-offs are recorded in [`docs/adr`](docs/adr/README.md).
 | [0010](docs/adr/0010-frontend-testing-strategy.md) | Frontend testing strategy |
 | [0011](docs/adr/0011-notification-delivery.md) | Notification delivery: what is notified, idempotency per channel, bounded retries |
 | [0012](docs/adr/0012-github-actions-importer.md) | Importing CI runs from GitHub Actions by polling |
+| [0013](docs/adr/0013-large-runs-and-rejected-events.md) | Splitting large runs; events Kafka cannot accept |
 
 ## Known limitations
 
@@ -418,6 +421,10 @@ Decisions and their trade-offs are recorded in [`docs/adr`](docs/adr/README.md).
   ([ADR-0008](docs/adr/0008-idempotent-consumer-and-error-handling.md)). Notifications that cannot be delivered for
   about a minute are given up the same way ([ADR-0011](docs/adr/0011-notification-delivery.md)).
 - Notifications go to one list of recipients; there is no routing per repository or team yet.
+- An event Kafka can never accept is marked rejected in the outbox and logged, not delivered; with large runs split
+  into parts this needs a single test result above 512 KB ([ADR-0013](docs/adr/0013-large-runs-and-rejected-events.md)).
+- A matrix build that runs the same tests in several configurations is imported as one run, so the configurations
+  are not told apart.
 - A renamed test starts a new history, and manual quarantines live in the database, not in the event stream.
 - The dashboard refreshes on navigation and focus, not live, and its API types are written by hand
   ([ADR-0009](docs/adr/0009-dashboard-architecture.md)).
