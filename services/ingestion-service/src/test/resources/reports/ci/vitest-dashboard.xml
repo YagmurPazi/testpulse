@@ -1,0 +1,271 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<testsuites name="vitest tests" tests="120" failures="0" errors="0" time="5.463115613">
+    <testsuite name="src/api/client.test.ts" timestamp="2026-11-25T20:58:30.104Z" hostname="runnervm0hi8g" tests="6" failures="0" errors="0" skipped="0" time="0.174925528">
+        <testcase classname="src/api/client.test.ts" name="getJson &gt; returns the parsed body of a successful response" time="0.081404257">
+        </testcase>
+        <testcase classname="src/api/client.test.ts" name="getJson &gt; turns problem details into an ApiError carrying them" time="0.023528934">
+        </testcase>
+        <testcase classname="src/api/client.test.ts" name="getJson &gt; falls back to the status text when a proxy answers with HTML" time="0.014651028">
+        </testcase>
+        <testcase classname="src/api/client.test.ts" name="getJson &gt; reports an unreachable service as status 0" time="0.013399286">
+        </testcase>
+        <testcase classname="src/api/client.test.ts" name="postJson &gt; sends a POST and returns the body" time="0.008162912">
+        </testcase>
+        <testcase classname="src/api/client.test.ts" name="postJson &gt; keeps extra problem members such as the current status of a 409" time="0.008923365">
+        </testcase>
+    </testsuite>
+    <testsuite name="src/api/queries.test.ts" timestamp="2026-11-25T20:58:30.106Z" hostname="runnervm0hi8g" tests="2" failures="0" errors="0" skipped="0" time="0.010770748">
+        <testcase classname="src/api/queries.test.ts" name="repositoryPath &gt; maps owner/name to path segments" time="0.002170156">
+        </testcase>
+        <testcase classname="src/api/queries.test.ts" name="repositoryPath &gt; encodes each segment but keeps the separator" time="0.000296884">
+        </testcase>
+    </testsuite>
+    <testsuite name="src/app/NotFoundPage.test.tsx" timestamp="2026-11-25T20:58:30.107Z" hostname="runnervm0hi8g" tests="2" failures="0" errors="0" skipped="0" time="0.345463223">
+        <testcase classname="src/app/NotFoundPage.test.tsx" name="unknown URLs &gt; show a not-found page with a way back" time="0.320671776">
+        </testcase>
+        <testcase classname="src/app/NotFoundPage.test.tsx" name="unknown URLs &gt; keep the skip link pointing at the main content" time="0.012316059">
+        </testcase>
+    </testsuite>
+    <testsuite name="src/app/accessibility.test.tsx" timestamp="2026-11-25T20:58:30.107Z" hostname="runnervm0hi8g" tests="5" failures="0" errors="0" skipped="0" time="1.465942834">
+        <testcase classname="src/app/accessibility.test.tsx" name="accessibility &gt; the repositories page has no detectable WCAG violations" time="0.322987061">
+        </testcase>
+        <testcase classname="src/app/accessibility.test.tsx" name="accessibility &gt; the repository page has no detectable WCAG violations" time="0.693965456">
+        </testcase>
+        <testcase classname="src/app/accessibility.test.tsx" name="accessibility &gt; the test page has no detectable WCAG violations" time="0.185397872">
+        </testcase>
+        <testcase classname="src/app/accessibility.test.tsx" name="accessibility &gt; the not found page has no detectable WCAG violations" time="0.040859709">
+        </testcase>
+        <testcase classname="src/app/accessibility.test.tsx" name="accessibility &gt; the quarantine confirmation has no detectable WCAG violations" time="0.212453231">
+        </testcase>
+    </testsuite>
+    <testsuite name="src/app/queryClient.test.ts" timestamp="2026-11-25T20:58:30.108Z" hostname="runnervm0hi8g" tests="2" failures="0" errors="0" skipped="0" time="0.018317693">
+        <testcase classname="src/app/queryClient.test.ts" name="shouldRetry &gt; never retries a client error" time="0.003119188">
+        </testcase>
+        <testcase classname="src/app/queryClient.test.ts" name="shouldRetry &gt; retries server and network errors twice" time="0.000771841">
+        </testcase>
+    </testsuite>
+    <testsuite name="src/features/repositories/RepositoriesPage.test.tsx" timestamp="2026-11-25T20:58:30.108Z" hostname="runnervm0hi8g" tests="4" failures="0" errors="0" skipped="0" time="0.789082524">
+        <testcase classname="src/features/repositories/RepositoriesPage.test.tsx" name="repositories page &gt; lists repositories, most urgent first, with counts per status" time="0.300868617">
+        </testcase>
+        <testcase classname="src/features/repositories/RepositoriesPage.test.tsx" name="repositories page &gt; links each repository to its page" time="0.412085776">
+        </testcase>
+        <testcase classname="src/features/repositories/RepositoriesPage.test.tsx" name="repositories page &gt; explains how to upload reports when nothing has been analysed yet" time="0.024128864">
+        </testcase>
+        <testcase classname="src/features/repositories/RepositoriesPage.test.tsx" name="repositories page &gt; shows the error and retries on request" time="0.039341052">
+        </testcase>
+    </testsuite>
+    <testsuite name="src/features/repositories/order.test.ts" timestamp="2026-11-25T20:58:30.109Z" hostname="runnervm0hi8g" tests="1" failures="0" errors="0" skipped="0" time="0.031188247">
+        <testcase classname="src/features/repositories/order.test.ts" name="byAttention &gt; puts flaky before suspicious before healthy, then sorts by name" time="0.01777944">
+        </testcase>
+    </testsuite>
+    <testsuite name="src/features/repository/RepositoryPage.test.tsx" timestamp="2026-11-25T20:58:30.110Z" hostname="runnervm0hi8g" tests="8" failures="0" errors="0" skipped="0" time="1.50799168">
+        <testcase classname="src/features/repository/RepositoryPage.test.tsx" name="repository page &gt; lists the tests with status, latest reason and counts" time="0.509665277">
+        </testcase>
+        <testcase classname="src/features/repository/RepositoryPage.test.tsx" name="repository page &gt; filters by status through the URL and shows the counts per status" time="0.36567358">
+        </testcase>
+        <testcase classname="src/features/repository/RepositoryPage.test.tsx" name="repository page &gt; reads the filter from a shared link" time="0.110469823">
+        </testcase>
+        <testcase classname="src/features/repository/RepositoryPage.test.tsx" name="repository page &gt; says when no test has the selected status" time="0.099698449">
+        </testcase>
+        <testcase classname="src/features/repository/RepositoryPage.test.tsx" name="repository page &gt; summarises the trend and offers it as a table" time="0.117247112">
+        </testcase>
+        <testcase classname="src/features/repository/RepositoryPage.test.tsx" name="repository page &gt; requests another time range" time="0.193748311">
+        </testcase>
+        <testcase classname="src/features/repository/RepositoryPage.test.tsx" name="repository page &gt; reports a repository TestPulse does not know" time="0.030812204">
+        </testcase>
+        <testcase classname="src/features/repository/RepositoryPage.test.tsx" name="trend chart &gt; is hidden from assistive technology and not focusable, as its data is in the caption and table" time="0.068462841">
+        </testcase>
+    </testsuite>
+    <testsuite name="src/features/repository/searchParams.test.ts" timestamp="2026-11-25T20:58:30.111Z" hostname="runnervm0hi8g" tests="11" failures="0" errors="0" skipped="0" time="0.038814046">
+        <testcase classname="src/features/repository/searchParams.test.ts" name="parseStatus &gt; accepts known statuses" time="0.006434833">
+        </testcase>
+        <testcase classname="src/features/repository/searchParams.test.ts" name="parseStatus &gt; treats null as no filter" time="0.003539156">
+        </testcase>
+        <testcase classname="src/features/repository/searchParams.test.ts" name="parseStatus &gt; treats &quot;&quot; as no filter" time="0.000266395">
+        </testcase>
+        <testcase classname="src/features/repository/searchParams.test.ts" name="parseStatus &gt; treats &quot;flaky&quot; as no filter" time="0.000239526">
+        </testcase>
+        <testcase classname="src/features/repository/searchParams.test.ts" name="parseStatus &gt; treats &quot;BROKEN&quot; as no filter" time="0.00021108">
+        </testcase>
+        <testcase classname="src/features/repository/searchParams.test.ts" name="parseDays &gt; accepts the offered ranges" time="0.000380057">
+        </testcase>
+        <testcase classname="src/features/repository/searchParams.test.ts" name="parseDays &gt; falls back to 30 days for null" time="0.000298322">
+        </testcase>
+        <testcase classname="src/features/repository/searchParams.test.ts" name="parseDays &gt; falls back to 30 days for &quot;&quot;" time="0.000210911">
+        </testcase>
+        <testcase classname="src/features/repository/searchParams.test.ts" name="parseDays &gt; falls back to 30 days for &quot;14&quot;" time="0.000233337">
+        </testcase>
+        <testcase classname="src/features/repository/searchParams.test.ts" name="parseDays &gt; falls back to 30 days for &quot;365&quot;" time="0.000181664">
+        </testcase>
+        <testcase classname="src/features/repository/searchParams.test.ts" name="parseDays &gt; falls back to 30 days for &quot;abc&quot;" time="0.000188455">
+        </testcase>
+    </testsuite>
+    <testsuite name="src/features/repository/trend.test.ts" timestamp="2026-11-25T20:58:30.112Z" hostname="runnervm0hi8g" tests="5" failures="0" errors="0" skipped="0" time="0.032525037">
+        <testcase classname="src/features/repository/trend.test.ts" name="fillDays &gt; returns exactly the requested days, ending today, with zeros where nothing ran" time="0.010436161">
+        </testcase>
+        <testcase classname="src/features/repository/trend.test.ts" name="fillDays &gt; drops days the API returned before the window" time="0.000967241">
+        </testcase>
+        <testcase classname="src/features/repository/trend.test.ts" name="fillDays &gt; crosses month boundaries in UTC" time="0.000643277">
+        </testcase>
+        <testcase classname="src/features/repository/trend.test.ts" name="totals &gt; sums every counter" time="0.001076127">
+        </testcase>
+        <testcase classname="src/features/repository/trend.test.ts" name="totals &gt; is zero for no days" time="0.000550523">
+        </testcase>
+    </testsuite>
+    <testsuite name="src/features/test/TestPage.test.tsx" timestamp="2026-11-25T20:58:30.113Z" hostname="runnervm0hi8g" tests="11" failures="0" errors="0" skipped="0" time="0.973014599">
+        <testcase classname="src/features/test/TestPage.test.tsx" name="test page &gt; shows the test, its status and where it belongs" time="0.312044708">
+        </testcase>
+        <testcase classname="src/features/test/TestPage.test.tsx" name="test page &gt; shows the latest results oldest first, marking passes after failed attempts" time="0.040976078">
+        </testcase>
+        <testcase classname="src/features/test/TestPage.test.tsx" name="test page &gt; explains every status change, newest first" time="0.050009599">
+        </testcase>
+        <testcase classname="src/features/test/TestPage.test.tsx" name="test page &gt; lists the executions with commit, attempt and outcome" time="0.037972467">
+        </testcase>
+        <testcase classname="src/features/test/TestPage.test.tsx" name="test page &gt; quarantines a flaky test after confirmation" time="0.139072122">
+        </testcase>
+        <testcase classname="src/features/test/TestPage.test.tsx" name="test page &gt; does nothing when the confirmation is cancelled" time="0.06079282">
+        </testcase>
+        <testcase classname="src/features/test/TestPage.test.tsx" name="test page &gt; releases a quarantined test back to suspicious" time="0.125974491">
+        </testcase>
+        <testcase classname="src/features/test/TestPage.test.tsx" name="test page &gt; offers no manual action for a stable test" time="0.033900554">
+        </testcase>
+        <testcase classname="src/features/test/TestPage.test.tsx" name="test page &gt; shows a conflict and the current status when the test changed meanwhile" time="0.078304756">
+        </testcase>
+        <testcase classname="src/features/test/TestPage.test.tsx" name="test page &gt; keeps the error visible when a status change fails without a status change" time="0.064018333">
+        </testcase>
+        <testcase classname="src/features/test/TestPage.test.tsx" name="test page &gt; says so when the test does not exist" time="0.016373331">
+        </testcase>
+    </testsuite>
+    <testsuite name="src/lib/format.test.ts" timestamp="2026-11-25T20:58:30.115Z" hostname="runnervm0hi8g" tests="19" failures="0" errors="0" skipped="0" time="0.023899048">
+        <testcase classname="src/lib/format.test.ts" name="formatRelative &gt; formats 2026-11-25T11:59:30Z as &quot;just now&quot;" time="0.004399394">
+        </testcase>
+        <testcase classname="src/lib/format.test.ts" name="formatRelative &gt; formats 2026-11-25T11:55:00Z as &quot;5 minutes ago&quot;" time="0.000485098">
+        </testcase>
+        <testcase classname="src/lib/format.test.ts" name="formatRelative &gt; formats 2026-11-25T09:00:00Z as &quot;3 hours ago&quot;" time="0.000255751">
+        </testcase>
+        <testcase classname="src/lib/format.test.ts" name="formatRelative &gt; formats 2026-11-24T12:00:00Z as &quot;yesterday&quot;" time="0.000178844">
+        </testcase>
+        <testcase classname="src/lib/format.test.ts" name="formatRelative &gt; formats 2026-11-20T12:00:00Z as &quot;5 days ago&quot;" time="0.000928427">
+        </testcase>
+        <testcase classname="src/lib/format.test.ts" name="formatRelative &gt; formats 2026-09-20T12:00:00Z as &quot;2 months ago&quot;" time="0.000706857">
+        </testcase>
+        <testcase classname="src/lib/format.test.ts" name="formatRelative &gt; formats 2024-11-25T12:00:00Z as &quot;2 years ago&quot;" time="0.000286857">
+        </testcase>
+        <testcase classname="src/lib/format.test.ts" name="formatDuration &gt; formats 0 ms as &quot;0 ms&quot;" time="0.00029397">
+        </testcase>
+        <testcase classname="src/lib/format.test.ts" name="formatDuration &gt; formats 214 ms as &quot;214 ms&quot;" time="0.000194249">
+        </testcase>
+        <testcase classname="src/lib/format.test.ts" name="formatDuration &gt; formats 999 ms as &quot;999 ms&quot;" time="0.000148978">
+        </testcase>
+        <testcase classname="src/lib/format.test.ts" name="formatDuration &gt; formats 1000 ms as &quot;1.0 s&quot;" time="0.000120734">
+        </testcase>
+        <testcase classname="src/lib/format.test.ts" name="formatDuration &gt; formats 1731 ms as &quot;1.7 s&quot;" time="0.000151082">
+        </testcase>
+        <testcase classname="src/lib/format.test.ts" name="formatDuration &gt; formats 59949 ms as &quot;59.9 s&quot;" time="0.000147464">
+        </testcase>
+        <testcase classname="src/lib/format.test.ts" name="formatDuration &gt; formats 125000 ms as &quot;2 min 5 s&quot;" time="0.000125019">
+        </testcase>
+        <testcase classname="src/lib/format.test.ts" name="formatting helpers &gt; formats instants in the local time zone (UTC in tests)" time="0.000277718">
+        </testcase>
+        <testcase classname="src/lib/format.test.ts" name="formatting helpers &gt; formats an ISO day without shifting it by the time zone" time="0.000252163">
+        </testcase>
+        <testcase classname="src/lib/format.test.ts" name="formatting helpers &gt; abbreviates a commit SHA to seven characters" time="0.001028877">
+        </testcase>
+        <testcase classname="src/lib/format.test.ts" name="formatting helpers &gt; strips the package from a class name" time="0.000264588">
+        </testcase>
+        <testcase classname="src/lib/format.test.ts" name="formatting helpers &gt; pluralises" time="0.00058477">
+        </testcase>
+    </testsuite>
+    <testsuite name="src/lib/status.test.ts" timestamp="2026-11-25T20:58:30.117Z" hostname="runnervm0hi8g" tests="2" failures="0" errors="0" skipped="0" time="0.012192124">
+        <testcase classname="src/lib/status.test.ts" name="describeOutcome &gt; names the outcome" time="0.002471512">
+        </testcase>
+        <testcase classname="src/lib/status.test.ts" name="describeOutcome &gt; mentions failed attempts before the final outcome" time="0.000396824">
+        </testcase>
+    </testsuite>
+    <testsuite name="tokens/contrast.test.ts" timestamp="2026-11-25T20:58:30.118Z" hostname="runnervm0hi8g" tests="42" failures="0" errors="0" skipped="0" time="0.038988282">
+        <testcase classname="tokens/contrast.test.ts" name="light theme &gt; defines the tokens this test checks" time="0.005828798">
+        </testcase>
+        <testcase classname="tokens/contrast.test.ts" name="light theme &gt; --text on --surface meets WCAG AA (4.5:1)" time="0.002556315">
+        </testcase>
+        <testcase classname="tokens/contrast.test.ts" name="light theme &gt; --text on --bg meets WCAG AA (4.5:1)" time="0.000264056">
+        </testcase>
+        <testcase classname="tokens/contrast.test.ts" name="light theme &gt; --text-muted on --surface meets WCAG AA (4.5:1)" time="0.000212794">
+        </testcase>
+        <testcase classname="tokens/contrast.test.ts" name="light theme &gt; --text-muted on --bg meets WCAG AA (4.5:1)" time="0.000189957">
+        </testcase>
+        <testcase classname="tokens/contrast.test.ts" name="light theme &gt; --accent on --surface meets WCAG AA (4.5:1)" time="0.000199576">
+        </testcase>
+        <testcase classname="tokens/contrast.test.ts" name="light theme &gt; --accent on --bg meets WCAG AA (4.5:1)" time="0.000179711">
+        </testcase>
+        <testcase classname="tokens/contrast.test.ts" name="light theme &gt; --stable on --surface meets WCAG AA (4.5:1)" time="0.000170624">
+        </testcase>
+        <testcase classname="tokens/contrast.test.ts" name="light theme &gt; --stable on --bg meets WCAG AA (4.5:1)" time="0.000200268">
+        </testcase>
+        <testcase classname="tokens/contrast.test.ts" name="light theme &gt; --suspicious on --surface meets WCAG AA (4.5:1)" time="0.00016881">
+        </testcase>
+        <testcase classname="tokens/contrast.test.ts" name="light theme &gt; --suspicious on --bg meets WCAG AA (4.5:1)" time="0.000962098">
+        </testcase>
+        <testcase classname="tokens/contrast.test.ts" name="light theme &gt; --flaky on --surface meets WCAG AA (4.5:1)" time="0.000256863">
+        </testcase>
+        <testcase classname="tokens/contrast.test.ts" name="light theme &gt; --flaky on --bg meets WCAG AA (4.5:1)" time="0.002014378">
+        </testcase>
+        <testcase classname="tokens/contrast.test.ts" name="light theme &gt; --quarantined on --surface meets WCAG AA (4.5:1)" time="0.000227131">
+        </testcase>
+        <testcase classname="tokens/contrast.test.ts" name="light theme &gt; --quarantined on --bg meets WCAG AA (4.5:1)" time="0.000177217">
+        </testcase>
+        <testcase classname="tokens/contrast.test.ts" name="light theme &gt; --failed on --surface meets WCAG AA (4.5:1)" time="0.000121103">
+        </testcase>
+        <testcase classname="tokens/contrast.test.ts" name="light theme &gt; --failed on --bg meets WCAG AA (4.5:1)" time="0.000142857">
+        </testcase>
+        <testcase classname="tokens/contrast.test.ts" name="light theme &gt; the stable badge meets WCAG AA (4.5:1)" time="0.000228106">
+        </testcase>
+        <testcase classname="tokens/contrast.test.ts" name="light theme &gt; the suspicious badge meets WCAG AA (4.5:1)" time="0.000186798">
+        </testcase>
+        <testcase classname="tokens/contrast.test.ts" name="light theme &gt; the flaky badge meets WCAG AA (4.5:1)" time="0.000121664">
+        </testcase>
+        <testcase classname="tokens/contrast.test.ts" name="light theme &gt; the quarantined badge meets WCAG AA (4.5:1)" time="0.000129078">
+        </testcase>
+        <testcase classname="tokens/contrast.test.ts" name="dark theme &gt; defines the tokens this test checks" time="0.000431298">
+        </testcase>
+        <testcase classname="tokens/contrast.test.ts" name="dark theme &gt; --text on --surface meets WCAG AA (4.5:1)" time="0.000171682">
+        </testcase>
+        <testcase classname="tokens/contrast.test.ts" name="dark theme &gt; --text on --bg meets WCAG AA (4.5:1)" time="0.000133198">
+        </testcase>
+        <testcase classname="tokens/contrast.test.ts" name="dark theme &gt; --text-muted on --surface meets WCAG AA (4.5:1)" time="0.000125271">
+        </testcase>
+        <testcase classname="tokens/contrast.test.ts" name="dark theme &gt; --text-muted on --bg meets WCAG AA (4.5:1)" time="0.000122859">
+        </testcase>
+        <testcase classname="tokens/contrast.test.ts" name="dark theme &gt; --accent on --surface meets WCAG AA (4.5:1)" time="0.000118206">
+        </testcase>
+        <testcase classname="tokens/contrast.test.ts" name="dark theme &gt; --accent on --bg meets WCAG AA (4.5:1)" time="0.00011863">
+        </testcase>
+        <testcase classname="tokens/contrast.test.ts" name="dark theme &gt; --stable on --surface meets WCAG AA (4.5:1)" time="0.000120264">
+        </testcase>
+        <testcase classname="tokens/contrast.test.ts" name="dark theme &gt; --stable on --bg meets WCAG AA (4.5:1)" time="0.000146361">
+        </testcase>
+        <testcase classname="tokens/contrast.test.ts" name="dark theme &gt; --suspicious on --surface meets WCAG AA (4.5:1)" time="0.000129948">
+        </testcase>
+        <testcase classname="tokens/contrast.test.ts" name="dark theme &gt; --suspicious on --bg meets WCAG AA (4.5:1)" time="0.000111218">
+        </testcase>
+        <testcase classname="tokens/contrast.test.ts" name="dark theme &gt; --flaky on --surface meets WCAG AA (4.5:1)" time="0.000079357">
+        </testcase>
+        <testcase classname="tokens/contrast.test.ts" name="dark theme &gt; --flaky on --bg meets WCAG AA (4.5:1)" time="0.000070961">
+        </testcase>
+        <testcase classname="tokens/contrast.test.ts" name="dark theme &gt; --quarantined on --surface meets WCAG AA (4.5:1)" time="0.000069796">
+        </testcase>
+        <testcase classname="tokens/contrast.test.ts" name="dark theme &gt; --quarantined on --bg meets WCAG AA (4.5:1)" time="0.000277078">
+        </testcase>
+        <testcase classname="tokens/contrast.test.ts" name="dark theme &gt; --failed on --surface meets WCAG AA (4.5:1)" time="0.000175263">
+        </testcase>
+        <testcase classname="tokens/contrast.test.ts" name="dark theme &gt; --failed on --bg meets WCAG AA (4.5:1)" time="0.000289796">
+        </testcase>
+        <testcase classname="tokens/contrast.test.ts" name="dark theme &gt; the stable badge meets WCAG AA (4.5:1)" time="0.000145287">
+        </testcase>
+        <testcase classname="tokens/contrast.test.ts" name="dark theme &gt; the suspicious badge meets WCAG AA (4.5:1)" time="0.000143068">
+        </testcase>
+        <testcase classname="tokens/contrast.test.ts" name="dark theme &gt; the flaky badge meets WCAG AA (4.5:1)" time="0.000129223">
+        </testcase>
+        <testcase classname="tokens/contrast.test.ts" name="dark theme &gt; the quarantined badge meets WCAG AA (4.5:1)" time="0.000133375">
+        </testcase>
+    </testsuite>
+</testsuites>

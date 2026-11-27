@@ -37,8 +37,8 @@ flowchart LR
     collect --> analyse --> decide --> tell
 ```
 
-1. **Collect.** Every CI run's test reports (JUnit XML, as written by Maven Surefire and Failsafe, Gradle and many
-   other tools) are uploaded to TestPulse, or imported from GitHub Actions artifacts without changing the workflow.
+1. **Collect.** Every CI run's test reports in JUnit XML (tested with Maven Surefire and Failsafe, Vitest and
+   Playwright) are uploaded to TestPulse, or imported from GitHub Actions artifacts without changing the workflow.
 2. **Analyse.** For every test, TestPulse keeps the history of its results: which commit, which attempt, passed or
    failed, and whether it passed only after a retry.
 3. **Decide.** From that history, each test gets a status, and every change of status comes with a sentence that
@@ -200,7 +200,8 @@ Topics → `testpulse.test-runs` → Messages.
 
 ## Uploading reports
 
-`POST /api/v1/test-runs` takes one or more JUnit XML files (Surefire, Failsafe, Gradle) and the CI metadata:
+`POST /api/v1/test-runs` takes one or more JUnit XML files and the CI metadata. The parser is tested with real reports
+of Maven Surefire and Failsafe, Vitest and Playwright from this repository's CI:
 
 ```bash
 curl -F repository=acme/shop -F commitSha=9f2c4e1 -F branch=main \

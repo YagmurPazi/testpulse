@@ -55,6 +55,68 @@ class SurefireReportParserTest {
         }
     }
 
+    /**
+     * The importer reads every artifact named junit-reports*, including the dashboard's Vitest and Playwright
+     * reports. These are the real files from this repository's CI, plus one Vitest report with failures and skips.
+     */
+    @Nested
+    class OtherJUnitWriters {
+
+        @Test
+        void readsVitestReportOfTheDashboard() throws IOException {
+            List<TestCaseResult> results = parse("/reports/ci/vitest-dashboard.xml");
+
+            assertThat(results).hasSize(120).allMatch(result -> result.outcome() == TestOutcome.PASSED);
+            assertThat(results)
+                    .extracting(TestCaseResult::className, TestCaseResult::testName)
+                    .contains(tuple("src/api/client.test.ts",
+                            "getJson > returns the parsed body of a successful response"))
+                    .doesNotHaveDuplicates();
+        }
+
+        @Test
+        void readsVitestFailuresAndSkips() throws IOException {
+            List<TestCaseResult> results = parse("/reports/samples/vitest-failures-and-skips.xml");
+
+            assertThat(results)
+                    .extracting(TestCaseResult::testName, TestCaseResult::outcome, TestCaseResult::failureMessage)
+                    .containsExactly(
+                            tuple("cart > adds an item", TestOutcome.PASSED, null),
+                            tuple("cart > applies a coupon", TestOutcome.FAILED,
+                                    "expected { total: 10 } to deeply equal { total: 9 }"),
+                            // Vitest writes a thrown exception as <failure>, not <error>
+                            tuple("cart > throws on checkout", TestOutcome.FAILED, "price is undefined"),
+                            tuple("cart > ships abroad", TestOutcome.SKIPPED, null),
+                            tuple("cart > supports gift cards", TestOutcome.SKIPPED, null));
+            assertThat(results).allMatch(result -> result.className().equals("src/cart.test.ts"));
+        }
+
+        @Test
+        void readsPlaywrightReportWithoutXmlDeclaration() throws IOException {
+            List<TestCaseResult> results = parse("/reports/ci/playwright-e2e-passed.xml");
+
+            assertThat(results)
+                    .extracting(TestCaseResult::className, TestCaseResult::testName, TestCaseResult::outcome)
+                    .containsExactly(
+                            tuple("flaky-test.spec.ts", "an uploaded flaky test is visible from the overview down to "
+                                    + "its history", TestOutcome.PASSED),
+                            tuple("flaky-test.spec.ts", "a flaky test can be quarantined and released",
+                                    TestOutcome.PASSED),
+                            tuple("flaky-test.spec.ts", "unknown pages and tests are reported, not blank",
+                                    TestOutcome.PASSED));
+        }
+
+        @Test
+        void readsPlaywrightFailureWithAttachmentsInSystemOut() throws IOException {
+            List<TestCaseResult> results = parse("/reports/ci/playwright-e2e-failed.xml");
+
+            assertThat(results).extracting(TestCaseResult::outcome)
+                    .containsExactly(TestOutcome.FAILED, TestOutcome.PASSED, TestOutcome.PASSED);
+            assertThat(results.getFirst().failureMessage())
+                    .isEqualTo("expect(received).toEqual(expected) // deep equality");
+        }
+    }
+
     @Nested
     class SurefireReruns {
 
