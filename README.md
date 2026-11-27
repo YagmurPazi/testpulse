@@ -7,8 +7,8 @@
 
 TestPulse detects **flaky tests** from CI test reports and tracks test health over time.
 
-> **Status: Phase 0 (foundation).** The architecture, quality pipeline and local environment are in place.
-> The features described below are being built phase by phase; see the [roadmap](#roadmap).
+> **Status: Phase 1 (ingestion).** Reports can be uploaded, are stored idempotently and published to Kafka.
+> Flakiness detection, notifications and the dashboard are built in the next phases; see the [roadmap](#roadmap).
 
 ## The problem
 
@@ -68,6 +68,10 @@ Only Docker is required. No local JDK or Maven needed.
 docker compose up --build
 ```
 
+This builds the services, starts Kafka, PostgreSQL and Mailpit, and uploads the demo runs in [`demo/runs`](demo/runs):
+this repository's own CI reports and a small flaky-test story (a test that times out and passes on a re-run of the
+same commit).
+
 | What | Where |
 |---|---|
 | ingestion-service | http://localhost:8081/actuator/health |
@@ -75,6 +79,35 @@ docker compose up --build
 | notification-service | http://localhost:8083/actuator/health |
 | Mailpit (captured e-mails) | http://localhost:8025 |
 | Kafka UI (optional) | http://localhost:8090, start with `docker compose --profile tools up` |
+
+With the Kafka UI running, the published `TestRunIngested` events are visible under
+Topics → `testpulse.test-runs` → Messages.
+
+## Uploading reports
+
+`POST /api/v1/test-runs` takes one or more JUnit XML files (Surefire, Failsafe, Gradle) and the CI metadata:
+
+```bash
+curl -F repository=acme/shop -F commitSha=9f2c4e1 -F branch=main \
+     -F externalRunId=1234 -F attempt=1 \
+     -F reports=@target/surefire-reports/TEST-com.acme.CartTest.xml \
+     -F reports=@target/surefire-reports/TEST-com.acme.OrderTest.xml \
+     http://localhost:8081/api/v1/test-runs
+```
+
+| Field | Required | Notes |
+|---|---|---|
+| `reports` | yes | one or more files, up to 10 MB each and 50 MB per request |
+| `repository` | yes | `owner/name` |
+| `commitSha` | yes | 7 to 64 hex characters |
+| `branch` | yes | |
+| `externalRunId` | no | CI run id; without it, a SHA-256 of the report contents identifies the run |
+| `attempt` | no | defaults to 1; a re-run of the same CI run is a new attempt and a new run |
+
+The upload is **idempotent**: `201 Created` for a new run, `200 OK` with the stored run when the same
+`(repository, externalRunId, attempt)` arrives again. Errors are RFC 9457 problem details (`application/problem+json`).
+
+`scripts/seed.sh` uploads the demo runs against a running service.
 
 ## Development
 
@@ -100,6 +133,8 @@ services/
   notification-service/ Slack and e-mail notifications
   Dockerfile           one multi-stage image definition for all services
 infra/                 local infrastructure (PostgreSQL init scripts)
+demo/runs/             demo CI runs, uploaded by the seed container
+scripts/               seed.sh and other helper scripts
 config/                Checkstyle and SpotBugs configuration
 docs/adr/              architecture decision records
 ```
@@ -146,6 +181,8 @@ Decisions and their trade-offs are recorded in [`docs/adr`](docs/adr/README.md).
 | [0002](docs/adr/0002-monorepo-with-maven-multi-module.md) | Monorepo with Maven multi-module |
 | [0003](docs/adr/0003-hexagonal-architecture-enforced-by-archunit.md) | Hexagonal architecture enforced by ArchUnit |
 | [0004](docs/adr/0004-kafka-as-event-backbone.md) | Kafka as the event backbone |
+| [0005](docs/adr/0005-event-contracts-and-wire-format.md) | Event contracts and wire format |
+| [0006](docs/adr/0006-transactional-outbox.md) | Transactional outbox for publishing events |
 
 ## Known limitations
 
@@ -153,12 +190,15 @@ Decisions and their trade-offs are recorded in [`docs/adr`](docs/adr/README.md).
   would run at least three brokers.
 - **Artifact retention:** GitHub keeps Actions artifacts for at most 90 days, so the importer can only read
   that window of CI history.
-- Credentials in `compose.yaml` are for local development only.
+- Credentials in `compose.yaml` are for local development only, and the upload API has no authentication.
+  A deployment would need at least API keys per repository.
+- **At-least-once delivery:** an event can reach Kafka twice after a failure; consumers deduplicate on its `eventId`
+  ([ADR-0006](docs/adr/0006-transactional-outbox.md)).
 
 ## Roadmap
 
 - [x] **Phase 0:** project skeleton, quality pipeline, local environment, first ADRs
-- [ ] **Phase 1:** ingestion-service: JUnit XML parsing, upload endpoint, `TestRunIngested` events
+- [x] **Phase 1:** ingestion-service: JUnit XML parsing, upload endpoint, `TestRunIngested` events via outbox
 - [ ] **Phase 2:** analysis-service: test history, flakiness strategies, test state machine, query API
 - [ ] **Phase 3:** dashboard
 - [ ] **Phase 4:** notification-service, GitHub Actions importer

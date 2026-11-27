@@ -6,6 +6,42 @@ spring:
     url: jdbc:postgresql://localhost:5432/ingestion
     username: ingestion
     password: ingestion
+    hikari:
+      data-source-properties:
+        # Lets the PostgreSQL driver turn JDBC batches into multi-row INSERTs.
+        reWriteBatchedInserts: true
+  servlet:
+    multipart:
+      # Upper bound for uploads: protects memory and keeps events well below Kafka's message size limit.
+      max-file-size: 10MB
+      max-request-size: 50MB
+  mvc:
+    problemdetails:
+      enabled: true
+  kafka:
+    bootstrap-servers: localhost:9092
+    producer:
+      # Wait for all in-sync replicas: an acknowledged event survives a broker failure.
+      acks: all
+      # Compress batches; runs with thousands of results stay well below the 1 MB message limit.
+      compression-type: zstd
+      properties:
+        # Retries inside the producer never create duplicates or reorder messages of a partition.
+        enable.idempotence: true
+        linger.ms: 5
+
+testpulse:
+  kafka:
+    test-runs:
+      partitions: 3
+      # 1 for the single local broker; at least 3 in production.
+      replication-factor: 1
+  outbox:
+    relay:
+      enabled: true
+      poll-interval: 1s
+      batch-size: 100
+      send-timeout: 10s
 
 server:
   port: 8081

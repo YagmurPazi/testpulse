@@ -72,6 +72,9 @@ jobs:
 
       # Build only; publishing images to a registry is out of MVP scope.
       - uses: docker/build-push-action@v7
+        env:
+          # Do not upload a build record artifact per image; it only clutters the run's artifacts.
+          DOCKER_BUILD_RECORD_UPLOAD: false
         with:
           context: .
           file: services/Dockerfile

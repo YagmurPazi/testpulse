@@ -11,6 +11,14 @@ x-service-defaults: &service-defaults
     dockerfile: services/Dockerfile
   restart: unless-stopped
 
+# Readiness of a Spring Boot service; SERVICE_PORT is set per service ($$ escapes compose interpolation).
+x-service-healthcheck: &service-healthcheck
+  test: ["CMD-SHELL", "curl -fsS http://localhost:$${SERVICE_PORT}/actuator/health/readiness || exit 1"]
+  interval: 5s
+  timeout: 3s
+  retries: 30
+  start_period: 20s
+
 services:
 
   # ---------- Infrastructure ----------
@@ -98,10 +106,13 @@ services:
         MODULE: ingestion-service
     ports:
       - "8081:8081"
+    healthcheck: *service-healthcheck
     environment:
+      SERVICE_PORT: 8081
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/ingestion
       SPRING_DATASOURCE_USERNAME: ingestion
       SPRING_DATASOURCE_PASSWORD: ingestion
+      SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:19092
     depends_on:
       kafka:
         condition: service_healthy
@@ -116,6 +127,9 @@ services:
         MODULE: analysis-service
     ports:
       - "8082:8082"
+    healthcheck: *service-healthcheck
+    environment:
+      SERVICE_PORT: 8082
     depends_on:
       kafka:
         condition: service_healthy
@@ -130,11 +144,31 @@ services:
         MODULE: notification-service
     ports:
       - "8083:8083"
+    healthcheck: *service-healthcheck
+    environment:
+      SERVICE_PORT: 8083
     depends_on:
       kafka:
         condition: service_healthy
       mailpit:
         condition: service_started
+
+  # ---------- Demo data ----------
+
+  # One-shot: uploads demo/runs once ingestion-service is ready. Safe to repeat, uploads are idempotent.
+  seed:
+    image: curlimages/curl:8.23.0
+    entrypoint: ["/bin/sh", "/scripts/seed.sh"]
+    environment:
+      INGESTION_URL: http://ingestion-service:8081
+      RUNS_DIR: /demo/runs
+    volumes:
+      - ./scripts:/scripts:ro
+      - ./demo:/demo:ro
+    depends_on:
+      ingestion-service:
+        condition: service_healthy
+    restart: "no"
 
 volumes:
   kafka-data:

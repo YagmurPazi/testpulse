@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Aggregated format (Gradle, Ant and others): several suites under a testsuites root. -->
+<testsuites>
+  <testsuite name="io.example.OrderTest" tests="3">
+    <testcase name="createsOrder" classname="io.example.OrderTest" time="1,234.5"/>
+    <testcase name="handlesTimeout" classname="io.example.OrderTest" time="0.5">
+      <error type="java.lang.IllegalStateException">java.lang.IllegalStateException: pool exhausted
+	at io.example.Pool.take(Pool.java:10)</error>
+    </testcase>
+    <testcase name="exportsPdf" classname="io.example.OrderTest" time="0">
+      <skipped message="disabled on CI"/>
+    </testcase>
+  </testsuite>
+  <testsuite name="io.example.FallbackSuite" tests="1">
+    <testcase name="usesSuiteNameWhenClassnameIsMissing"/>
+  </testsuite>
+</testsuites>
