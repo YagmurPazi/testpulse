@@ -5,30 +5,127 @@
 ![Java 21](https://img.shields.io/badge/Java-21-orange)
 ![Spring Boot 4.2](https://img.shields.io/badge/Spring%20Boot-4.2-6DB33F)
 
-TestPulse detects **flaky tests** from CI test reports and tracks test health over time.
+**TestPulse finds the tests in your CI that fail for no reason, shows the evidence, and tells your team.**
 
-> **Status: MVP complete.** Reports are uploaded or imported from GitHub Actions, flaky tests are detected and tracked
-> through their lifecycle, the team is notified by e-mail or Slack, and a dashboard shows why each test is flaky.
-> A five-minute tour: [docs/demo.md](docs/demo.md).
+Those tests are called *flaky*: they pass and fail on the same code. TestPulse reads the JUnit reports your CI
+already produces, so no test and no pipeline has to change.
+
+> **Status: MVP complete.** A five-minute tour: [docs/demo.md](docs/demo.md).
 
 ![A repository in the dashboard: failures per day and its tests, the flaky one first, each with the reason of its
 latest status change](docs/images/repository.png)
 
-## The problem
+## Why
 
-A flaky test passes and fails on the same code. Each false failure costs a re-run, a context switch
-and a bit of trust in the pipeline, until people start ignoring red builds altogether.
+A build turns red. Someone re-runs it, it turns green, and everyone moves on. Nobody learns which test failed or why,
+so the same thing happens next week, in another pull request, to someone else.
 
-TestPulse:
+Each of these false alarms costs a re-run and a context switch. The bigger cost is trust: once red builds are
+"probably that flaky test again", a real regression gets re-run and ignored as well.
 
-- collects JUnit XML (Surefire format) reports from uploads and from GitHub Actions artifacts,
-- detects flaky tests from evidence, e.g. a test that both passed and failed on the same commit,
-  or one that keeps flipping between pass and fail ([ADR-0007](docs/adr/0007-flakiness-detection-and-test-status.md)),
-- moves each test through a lifecycle: `Stable → Suspicious → Flaky → Quarantined`, with a reason for every change,
-- shows each repository's tests, failure trend and the reason behind every status change on a dashboard,
-- notifies the team (e-mail, Slack) when a test becomes flaky, is quarantined, released or recovers.
+To fix a flaky test, a team first needs to know **which** tests are flaky, **how sure** that is, and **since when**.
+CI shows one run at a time; TestPulse looks at all of them.
 
-The value is shown with real data: TestPulse analyses **its own CI runs** and those of open source Java projects.
+## What it does
+
+```mermaid
+flowchart LR
+    collect["<b>1. Collect</b><br/>JUnit XML from every<br/>CI run, uploaded or<br/>imported from GitHub"]
+    analyse["<b>2. Analyse</b><br/>each test's history<br/>for signs of flakiness"]
+    decide["<b>3. Decide</b><br/>a status per test,<br/>with the reason"]
+    tell["<b>4. Tell</b><br/>dashboard, e-mail,<br/>Slack"]
+    collect --> analyse --> decide --> tell
+```
+
+1. **Collect.** Every CI run's test reports (JUnit XML, as written by Maven Surefire and Failsafe, Gradle and many
+   other tools) are uploaded to TestPulse, or imported from GitHub Actions artifacts without changing the workflow.
+2. **Analyse.** For every test, TestPulse keeps the history of its results: which commit, which attempt, passed or
+   failed, and whether it passed only after a retry.
+3. **Decide.** From that history, each test gets a status, and every change of status comes with a sentence that
+   explains it, such as *"Passed and failed on the same commit 9f2c4e1"*.
+4. **Tell.** The dashboard shows each repository's tests, most urgent first. The team gets an e-mail or a Slack
+   message when a test becomes flaky, is quarantined, released or recovers.
+
+## How it decides
+
+TestPulse only calls a test flaky on evidence that the **code was not the reason** it failed.
+
+| Evidence | Example | Verdict |
+|---|---|---|
+| **Same code, different result** | A CI run fails, is re-run on the same commit, and passes. Or the build tool's retry made it pass in the same run. | flaky: the strongest evidence, the code did not change |
+| **Keeps flipping** | Pass, fail, pass, pass, fail, ... across commits: at least 3 switches in the last 20 runs | suspicious from a rate of 0.15, flaky from 0.30 |
+
+Just as important is what is **not** flaky:
+
+| Pattern | Why it is not flaky |
+|---|---|
+| A test that fails on every run | It is broken. The code (or the test) needs a fix, not a flaky label. |
+| A regression that is fixed a few commits later | Pass, fail, fail, fail, pass is two switches: a bug and its fix. |
+| A single failure | One failure is just a failure, until there is a second sign. |
+
+Statuses change step by step, so a single unlucky run never labels a test:
+
+```mermaid
+stateDiagram-v2
+    direction LR
+    [*] --> Stable
+    Stable --> Suspicious: first sign
+    Suspicious --> Flaky: new evidence
+    Suspicious --> Stable: 10 clean passes
+    Flaky --> Stable: 10 clean passes
+    Flaky --> Quarantined: team decision
+    Quarantined --> Suspicious: team releases it
+```
+
+| Status | Meaning |
+|---|---|
+| **Stable** | No sign of flakiness. |
+| **Suspicious** | One sign so far. TestPulse is watching; most suspicious tests return to stable on their own. |
+| **Flaky** | Confirmed by new evidence after it became suspicious. Its failures are probably not caused by your change. |
+| **Quarantined** | The team decided to ignore its result while someone fixes it. Only people quarantine and release; TestPulse never does. |
+
+The thresholds and the reasoning behind them are in [ADR-0007](docs/adr/0007-flakiness-detection-and-test-status.md).
+
+## An example
+
+`CheckoutServiceTest.appliesDiscount` from the demo data, run by run:
+
+| CI run | Result | Status | Reason TestPulse gives |
+|---|---|---|---|
+| commit `9f2c4e1`, attempt 1 | error: read timed out | Stable | – (one failure is not evidence yet) |
+| commit `9f2c4e1`, attempt 2 (re-run) | passed | **Suspicious** | Passed and failed on the same commit 9f2c4e1 |
+| commit `4a1b2c3` | passed, but only after the build tool retried it once | **Flaky** | Passed only after 1 failed attempt(s) within one run on commit 4a1b2c3 |
+
+The team gets an e-mail at the flaky step, opens the test in the dashboard, sees these three runs and the reason, and
+quarantines it until the timeout is fixed. That decision is recorded, shown and announced as well.
+
+## What you get
+
+- **A dashboard** with every repository's tests by status, failures per day, and for each test its latest results,
+  its full status history and every execution by commit and attempt.
+- **Notifications** by e-mail and Slack, only for changes that need attention, and once per change and channel even
+  when an event arrives twice.
+- **No pipeline changes**: with a GitHub token, TestPulse imports the reports your workflows already keep. Or one
+  `curl` in a CI step uploads them.
+- **A REST API** for everything the dashboard shows, and for quarantining and releasing tests.
+
+What it does **not** do: it does not fix tests, re-run them, or change what your CI does. Quarantine is the team's
+record that a test is being dealt with; acting on it in the pipeline is up to the pipeline.
+
+## How it is built
+
+TestPulse is a small event-driven system: three Spring Boot services and a React dashboard that communicate through
+Kafka, each service with its own database. It is also a showcase of how such a system can be tested and documented:
+
+- **Reliable messaging:** transactional outbox, idempotent consumers, explicit handling of poison messages
+  ([ADR-0006](docs/adr/0006-transactional-outbox.md), [ADR-0008](docs/adr/0008-idempotent-consumer-and-error-handling.md)).
+- **Clean structure:** hexagonal architecture in every service, enforced by ArchUnit tests; Strategy, State,
+  Factory and Observer patterns where the domain asks for them.
+- **Testing at every level:** unit, mutation (PIT), contract, integration with real PostgreSQL, Kafka
+  and SMTP, accessibility, and end to end through the whole stack, all in CI with enforced thresholds
+  ([docs/testing.md](docs/testing.md)).
+- **Dogfooding:** CI keeps its own JUnit reports, and TestPulse can analyse its own test history.
+- **Every decision written down:** 12 architecture decision records ([docs/adr](docs/adr/README.md)).
 
 ## Architecture
 
