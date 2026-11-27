@@ -1,0 +1,10 @@
+<testsuites id="" name="" tests="3" failures="0" skipped="0" errors="0" time="5.286057999999999">
+<testsuite name="flaky-test.spec.ts" timestamp="2026-11-25T21:04:10.453Z" hostname="chromium" tests="3" failures="0" skipped="0" time="8.348" errors="0">
+<testcase name="an uploaded flaky test is visible from the overview down to its history" classname="flaky-test.spec.ts" time="3.554">
+</testcase>
+<testcase name="a flaky test can be quarantined and released" classname="flaky-test.spec.ts" time="4.094">
+</testcase>
+<testcase name="unknown pages and tests are reported, not blank" classname="flaky-test.spec.ts" time="0.7">
+</testcase>
+</testsuite>
+</testsuites>

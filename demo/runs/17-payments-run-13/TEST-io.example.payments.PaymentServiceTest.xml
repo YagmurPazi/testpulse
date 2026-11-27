@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="io.example.payments.PaymentServiceTest" tests="4" failures="1" errors="0" skipped="0">
+  <testcase name="authorizesCard" classname="io.example.payments.PaymentServiceTest" time="0.054"/>
+  <testcase name="capturesPayment" classname="io.example.payments.PaymentServiceTest" time="0.041"/>
+  <testcase name="refundsPartially" classname="io.example.payments.PaymentServiceTest" time="0.028">
+    <failure message="expected refund of 12.50 but was 0.00" type="org.opentest4j.AssertionFailedError">
+      <stackTrace>org.opentest4j.AssertionFailedError: expected refund of 12.50 but was 0.00</stackTrace>
+    </failure>
+  </testcase>
+  <testcase name="formatsAmount" classname="io.example.payments.PaymentServiceTest" time="0.015"/>
+</testsuite>

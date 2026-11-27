@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="io.example.payments.LedgerTest" tests="2" failures="0" errors="0" skipped="0">
+  <testcase name="reconcilesLedger" classname="io.example.payments.LedgerTest" time="0.017"/>
+  <testcase name="validatesIban" classname="io.example.payments.LedgerTest" time="0.054"/>
+</testsuite>

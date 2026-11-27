@@ -24,5 +24,9 @@ export default defineConfig({
     trace: 'retain-on-failure',
     screenshot: 'only-on-failure',
   },
-  projects: [{ name: 'chromium', use: { ...devices['Desktop Chrome'] } }],
+  projects: [
+    { name: 'chromium', use: { ...devices['Desktop Chrome'] } },
+    // README screenshots from the demo data; only on request (npm run screenshots).
+    { name: 'screenshots', testMatch: 'screenshots.ts', use: { ...devices['Desktop Chrome'] } },
+  ],
 });

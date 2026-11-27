@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<testsuites name="vitest tests" tests="5" failures="2" errors="0" time="0.010112083">
+    <testsuite name="src/cart.test.ts" timestamp="2026-11-27T13:11:33.732Z" hostname="localhost" tests="5" failures="2" errors="0" skipped="2" time="0.010112083">
+        <testcase classname="src/cart.test.ts" name="cart &gt; adds an item" time="0.001098708">
+        </testcase>
+        <testcase classname="src/cart.test.ts" name="cart &gt; applies a coupon" time="0.003846292">
+            <failure message="expected { total: 10 } to deeply equal { total: 9 }" type="AssertionError">
+AssertionError: expected { total: 10 } to deeply equal { total: 9 }
+
+- Expected
++ Received
+
+  {
+-   &quot;total&quot;: 9,
++   &quot;total&quot;: 10,
+  }
+
+ ❯ src/cart.test.ts:3:56
+            </failure>
+        </testcase>
+        <testcase classname="src/cart.test.ts" name="cart &gt; throws on checkout" time="0.000445291">
+            <failure message="price is undefined" type="TypeError">
+TypeError: price is undefined
+ ❯ src/cart.test.ts:4:42
+            </failure>
+        </testcase>
+        <testcase classname="src/cart.test.ts" name="cart &gt; ships abroad" time="0">
+            <skipped/>
+        </testcase>
+        <testcase classname="src/cart.test.ts" name="cart &gt; supports gift cards" time="0">
+            <skipped/>
+        </testcase>
+    </testsuite>
+</testsuites>

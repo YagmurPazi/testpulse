@@ -1,6 +1,7 @@
 package io.github.yagmurpazi.testpulse.architecture;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.tngtech.archunit.core.domain.JavaClasses;
 import com.tngtech.archunit.core.importer.ClassFileImporter;
@@ -33,8 +34,17 @@ class HexagonalArchitectureTest {
 
     @Test
     void rejectsDomainDependingOnAdapter() {
-        assertThat(evaluate("domainusesadapter", HexagonalArchitecture::layerDependencies).hasViolation())
-                .isTrue();
+        EvaluationResult result = evaluate("domainusesadapter", HexagonalArchitecture::layerDependencies);
+
+        assertThat(result.hasViolation()).isTrue();
+        assertThat(result.getFailureReport().getDetails()).anyMatch(detail -> detail.contains("OutwardDomain"));
+    }
+
+    @Test
+    void rejectsAMistypedBasePackageInsteadOfCheckingNothing() {
+        assertThatThrownBy(() -> evaluate("doesnotexist", HexagonalArchitecture::rulesFor))
+                .isInstanceOf(AssertionError.class)
+                .hasMessageContaining("failed to check any classes");
     }
 
     @Test

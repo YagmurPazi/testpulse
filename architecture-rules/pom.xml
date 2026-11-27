@@ -14,6 +14,12 @@
     <name>TestPulse :: Architecture Rules</name>
     <description>Shared ArchUnit rules enforcing hexagonal architecture. Used by services in test scope only.</description>
 
+    <properties>
+        <!-- Less logic than the services; values measured in CI, see docs/testing.md -->
+        <coverage.line.minimum>0.95</coverage.line.minimum>
+        <coverage.branch.minimum>0.00</coverage.branch.minimum>
+    </properties>
+
     <dependencies>
         <dependency>
             <groupId>com.tngtech.archunit</groupId>

@@ -1,0 +1,59 @@
+<testsuites id="" name="" tests="3" failures="1" skipped="0" errors="0" time="6.878329">
+<testsuite name="flaky-test.spec.ts" timestamp="2026-11-25T19:58:36.686Z" hostname="chromium" tests="3" failures="1" skipped="0" time="9.613" errors="0">
+<testcase name="an uploaded flaky test is visible from the overview down to its history" classname="flaky-test.spec.ts" time="5.064">
+<system-out>
+<![CDATA[
+[[ATTACHMENT|../../test-results/flaky-test-an-uploaded-fla-52c6c-verview-down-to-its-history-chromium/test-failed-1.png]]
+
+[[ATTACHMENT|../../test-results/flaky-test-an-uploaded-fla-52c6c-verview-down-to-its-history-chromium/error-context.md]]
+
+[[ATTACHMENT|../../test-results/flaky-test-an-uploaded-fla-52c6c-verview-down-to-its-history-chromium/trace.zip]]
+]]>
+</system-out>
+<failure message="expect(received).toEqual(expected) // deep equality" type="expect.toEqual">
+<![CDATA[  [chromium] › flaky-test.spec.ts:5:1 › an uploaded flaky test is visible from the overview down to its history › test page explains why it is flaky 
+
+    Error: expect(received).toEqual(expected) // deep equality
+
+    - Expected  - 1
+    + Received  + 3
+
+    - Array []
+    + Array [
+    +   "color-contrast: Elements must meet minimum color contrast ratio thresholds (1)",
+    + ]
+
+       at accessibility.ts:11
+
+       9 |   expect(
+      10 |     results.violations.map((violation) => `${violation.id}: ${violation.help} (${violation.nodes.length})`),
+    > 11 |   ).toEqual([]);
+         |     ^
+      12 | }
+      13 |
+        at expectNoAccessibilityViolations (/home/runner/work/testpulse/testpulse/dashboard/e2e/accessibility.ts:11:5)
+        at /home/runner/work/testpulse/testpulse/dashboard/e2e/flaky-test.spec.ts:39:5
+        at /home/runner/work/testpulse/testpulse/dashboard/e2e/flaky-test.spec.ts:29:3
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ../test-results/flaky-test-an-uploaded-fla-52c6c-verview-down-to-its-history-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ../test-results/flaky-test-an-uploaded-fla-52c6c-verview-down-to-its-history-chromium/error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    ../test-results/flaky-test-an-uploaded-fla-52c6c-verview-down-to-its-history-chromium/trace.zip
+    Usage:
+
+        npx playwright show-trace ../test-results/flaky-test-an-uploaded-fla-52c6c-verview-down-to-its-history-chromium/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+]]>
+</failure>
+</testcase>
+<testcase name="a flaky test can be quarantined and released" classname="flaky-test.spec.ts" time="3.614">
+</testcase>
+<testcase name="unknown pages and tests are reported, not blank" classname="flaky-test.spec.ts" time="0.935">
+</testcase>
+</testsuite>
+</testsuites>

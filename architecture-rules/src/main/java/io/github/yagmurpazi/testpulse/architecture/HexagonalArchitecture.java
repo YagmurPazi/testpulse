@@ -21,7 +21,8 @@ import com.tngtech.archunit.lang.CompositeArchRule;
  * config/                  framework wiring
  * </pre>
  *
- * <p>Empty layers are allowed so the rules can be applied before a layer has any classes.
+ * <p>Every layer must have classes. A rule over an empty package passes trivially, so a mistyped base package would
+ * otherwise check nothing at all and still be green.
  */
 public final class HexagonalArchitecture {
 
@@ -43,7 +44,6 @@ public final class HexagonalArchitecture {
     public static ArchRule layerDependencies(String basePackage) {
         return layeredArchitecture()
                 .consideringOnlyDependenciesInLayers()
-                .withOptionalLayers(true)
                 .layer("Domain").definedBy(basePackage + ".domain..")
                 .layer("Application").definedBy(basePackage + ".application..")
                 .layer("Adapters").definedBy(basePackage + ".adapter..")
@@ -60,7 +60,6 @@ public final class HexagonalArchitecture {
         return classes().that().resideInAPackage(basePackage + ".domain..")
                 .should().onlyDependOnClassesThat()
                 .resideInAnyPackage(basePackage + ".domain..", "java..", JSPECIFY)
-                .allowEmptyShould(true)
                 .as("Domain of " + basePackage + " is framework free");
     }
 
@@ -70,7 +69,6 @@ public final class HexagonalArchitecture {
                 .should().onlyDependOnClassesThat()
                 .resideInAnyPackage(
                         basePackage + ".application..", basePackage + ".domain..", "java..", JSPECIFY)
-                .allowEmptyShould(true)
                 .as("Application layer of " + basePackage + " is framework free");
     }
 
@@ -78,7 +76,6 @@ public final class HexagonalArchitecture {
     public static ArchRule adaptersAreIndependent(String basePackage) {
         return slices().matching(basePackage + ".adapter.(*).(*)..")
                 .should().notDependOnEachOther()
-                .allowEmptyShould(true)
                 .as("Adapters of " + basePackage + " do not depend on each other");
     }
 }
