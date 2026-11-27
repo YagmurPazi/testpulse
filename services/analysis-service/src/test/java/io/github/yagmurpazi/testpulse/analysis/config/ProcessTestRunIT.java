@@ -80,6 +80,25 @@ class ProcessTestRunIT extends IntegrationTest {
                 .isEqualTo("Passed only after 1 failed attempt(s) within one run on commit 4a1b2c3");
     }
 
+    /** ingestion-service splits large runs into parts: one run id, one event id per part, disjoint tests. */
+    @Test
+    void recordsEveryPartOfASplitRun() {
+        UUID runId = UUID.randomUUID();
+        ExecutedTest first = new ExecutedTest("io.example.checkout.CheckoutServiceTest", "appliesDiscount",
+                Outcome.PASSED, 0, 12);
+        ExecutedTest second = new ExecutedTest("io.example.checkout.CartTest", "addsItem", Outcome.FAILED, 0, 12);
+
+        processTestRun.process(new ProcessTestRunCommand(UUID.randomUUID(), runId, "acme/checkout", COMMIT, 1, T1,
+                List.of(first)));
+        processTestRun.process(new ProcessTestRunCommand(UUID.randomUUID(), runId, "acme/checkout", COMMIT, 1, T1,
+                List.of(second)));
+
+        assertThat(count("monitored_test")).isEqualTo(2);
+        assertThat(jdbc.sql("SELECT count(*) FROM test_execution WHERE run_id = :runId").param("runId", runId)
+                .query(Integer.class).single()).isEqualTo(2);
+        assertThat(count("processed_event")).isEqualTo(2);
+    }
+
     @Test
     void ignoresARedeliveredEvent() {
         ProcessTestRunCommand command = run(COMMIT, 1, T1, Outcome.PASSED, 0);

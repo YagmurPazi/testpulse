@@ -21,9 +21,11 @@ class OutboxTestRunEventPublisher implements TestRunEventPublisher {
         this.outbox = outbox;
     }
 
+    /** A large run becomes several events; all of them are stored in the same transaction as the run. */
     @Override
     public void publishIngested(TestRun run) {
-        TestRunIngested event = TestRunIngestedMapper.toEvent(run, UUID.randomUUID());
-        outbox.append(event.eventId(), Topics.TEST_RUNS, event.repository(), event, event.occurredAt());
+        for (TestRunIngested event : TestRunIngestedMapper.toEvents(run, UUID::randomUUID)) {
+            outbox.append(event.eventId(), Topics.TEST_RUNS, event.repository(), event, event.occurredAt());
+        }
     }
 }
